@@ -8,6 +8,7 @@ from loguru import logger
 
 from ..config import HeliosConfig
 from ..mcp_client import MCPClient
+from ..utils.history import record_action
 from .zeitgeist import discover_trend, TrendData
 from .ethics import screen_ethics
 from .audience import analyze_audience, AudienceInsights
@@ -77,7 +78,7 @@ async def run_ceo(config: HeliosConfig, dry_run: bool = False) -> CEOResult:
         },
     )
 
-    return CEOResult(
+    result = CEOResult(
         execution_summary=exec_summary,
         trend_data=trend,
         audience_insights=audience,
@@ -86,3 +87,22 @@ async def run_ceo(config: HeliosConfig, dry_run: bool = False) -> CEOResult:
         marketing_materials=marketing.listings,
         publication_queue=publication.publication_queue,
     )
+
+    # Record the action in history
+    record_action(
+        command="run",
+        parameters={"dry_run": dry_run},
+        result_summary={
+            "trend": trend.trend_name,
+            "opportunity_score": trend.opportunity_score,
+            "audience_confidence": audience.confidence_score,
+            "products_selected": len(product.selected_products),
+            "designs_created": len(creative.design_batch),
+            "listings_created": len(marketing.listings),
+            "items_queued": len(publication.publication_queue),
+        },
+        dry_run=dry_run,
+        success=True
+    )
+
+    return result

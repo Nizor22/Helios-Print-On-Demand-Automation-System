@@ -6,10 +6,12 @@ from dataclasses import asdict
 import typer
 from rich import print
 from rich.panel import Panel
+from rich.table import Table
 
 from .config import HeliosConfig
 from .agents.ceo import run_ceo
 from .utils.jsonio import dumps
+from .utils.history import get_last_action, get_recent_actions, record_action
 from .mcp_stub import serve as mcp_serve
 from .providers.etsy import EtsyClient
 
@@ -23,6 +25,15 @@ def run(dry_run: bool = typer.Option(False, help="Run with mock data")) -> None:
         result = asyncio.run(run_ceo(config, dry_run=dry_run))
     except Exception as e:
         print(Panel.fit(f"[red]Execution failed[/red]\n{e}"))
+        # Record failure in history
+        record_action(
+            command="run",
+            parameters={"dry_run": dry_run},
+            result_summary={},
+            dry_run=dry_run,
+            success=False,
+            error=str(e)
+        )
         raise typer.Exit(code=1)
 
     print(Panel.fit("Helios CEO Result (truncated)"))
@@ -36,6 +47,65 @@ def run(dry_run: bool = typer.Option(False, help="Run with mock data")) -> None:
         "publication_queue": result.publication_queue[:2],
     }
     print(dumps(summary))
+
+
+@app.command()
+def repeat() -> None:
+    """Repeat the last executed action"""
+    last_action = get_last_action()
+    
+    if not last_action:
+        print(Panel.fit("[yellow]No previous action found in history[/yellow]"))
+        raise typer.Exit(code=1)
+    
+    print(Panel.fit(f"[blue]Repeating last action:[/blue]\n"
+                    f"Command: {last_action.command}\n"
+                    f"Timestamp: {last_action.timestamp}\n"
+                    f"Parameters: {dumps(last_action.parameters)}"))
+    
+    # Currently only supporting repeat of 'run' command
+    if last_action.command == "run":
+        run(dry_run=last_action.parameters.get("dry_run", False))
+    else:
+        print(Panel.fit(f"[red]Repeat not implemented for command: {last_action.command}[/red]"))
+        raise typer.Exit(code=1)
+
+
+@app.command()
+def history(limit: int = typer.Option(10, help="Number of recent actions to show")) -> None:
+    """Show recent action history"""
+    recent_actions = get_recent_actions(limit)
+    
+    if not recent_actions:
+        print(Panel.fit("[yellow]No actions found in history[/yellow]"))
+        return
+    
+    table = Table(title="Recent Action History")
+    table.add_column("Timestamp", style="cyan")
+    table.add_column("Command", style="green")
+    table.add_column("Dry Run", style="yellow")
+    table.add_column("Success", style="white")
+    table.add_column("Details", style="blue")
+    
+    for action in recent_actions:
+        details = []
+        if action.success and action.result_summary:
+            if "trend" in action.result_summary:
+                details.append(f"Trend: {action.result_summary['trend']}")
+            if "opportunity_score" in action.result_summary:
+                details.append(f"Score: {action.result_summary['opportunity_score']}")
+        elif action.error:
+            details.append(f"Error: {action.error[:50]}...")
+        
+        table.add_row(
+            action.timestamp,
+            action.command,
+            "Yes" if action.dry_run else "No",
+            "✓" if action.success else "✗",
+            " | ".join(details) if details else "-"
+        )
+    
+    print(table)
 
 
 @app.command()
