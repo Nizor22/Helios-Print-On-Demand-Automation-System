@@ -16,6 +16,9 @@ python -m helios run --dry-run
 
 - `python -m helios run` – run full workflow
 - `python -m helios run --dry-run` – simulate with mock data
+- `python -m helios repeat` – repeat the last executed action
+- `python -m helios history` – show recent action history
+- `python -m helios history --limit 20` – show more history entries
 - `python -m helios demo` – print example outputs
 
 ## Structure
