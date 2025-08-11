@@ -1,6 +1,6 @@
 from typing import Dict, List, Any
 import asyncio
-from ..services.external_apis.printify_client import PrintifyClient
+from ..services.external_apis.printify_client import PrintifyAPIClient
 from ..mcp_client import MCPClient
 from ..config import load_config
 
@@ -13,7 +13,7 @@ class SupplierVettingService:
             self.config.google_mcp_url, 
             self.config.google_mcp_auth_token
         )
-        self.printify_client = PrintifyClient(self.config.printify_api_token)
+        self.printify_client = PrintifyAPIClient(self.config.printify_api_token, self.config.printify_shop_id)
     
     async def vet_pod_suppliers(self) -> Dict[str, Any]:
         """Vet potential POD suppliers"""

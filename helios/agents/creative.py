@@ -65,7 +65,7 @@ class CreativeDirector:
             print(f"Error in creative design generation: {e}")
             return self._generate_basic_designs(trend, products, num_designs_per_product)
 
-    async def run_batch(self, trend: Dict[str, Any], products: List[Dict[str, Any], num_designs_per_product: int = 3) -> Dict[str, Any]:
+    async def run_batch(self, trend: Dict[str, Any], products: List[Dict[str, Any]], num_designs_per_product: int = 3) -> Dict[str, Any]:
         """Enhanced batch processing for creative design generation with 75% API call reduction"""
         
         self.start_time = time.time()
