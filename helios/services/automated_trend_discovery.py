@@ -13,6 +13,7 @@ from loguru import logger
 
 from ..agents.ceo import HeliosCEO
 from ..agents.zeitgeist import ZeitgeistAgent
+from ..agents.trend_analysis_ai import TrendAnalysisAI, TrendAnalysisMode, TrendAnalysis as AITrendAnalysis
 from ..services.mcp_integration.google_trends_client import GoogleTrendsClient
 from ..services.mcp_integration.social_trends_scanner import SocialTrendsScanner
 from ..services.mcp_integration.news_sentiment_analyzer import NewsSentimentAnalyzer
@@ -68,6 +69,11 @@ class AutomatedTrendDiscovery:
             min_confidence=config.min_audience_confidence
         )
         self.zeitgeist_agent = ZeitgeistAgent()
+        
+        # Initialize the new AI agent for intelligent trend analysis
+        self.trend_ai = TrendAnalysisAI(config)
+        
+        # Keep legacy clients for backward compatibility
         self.google_trends_client = GoogleTrendsClient()
         self.social_scanner = SocialTrendsScanner()
         self.news_analyzer = NewsSentimentAnalyzer()
@@ -87,7 +93,10 @@ class AutomatedTrendDiscovery:
         self.active_session: Optional[DiscoverySession] = None
         self.discovery_history: List[DiscoverySession] = []
         
-        logger.info("✅ Automated Trend Discovery Service initialized")
+        # AI mode configuration
+        self.use_ai_agent = True  # Enable AI agent by default
+        
+        logger.info("✅ Automated Trend Discovery Service initialized with AI Agent")
     
     async def start_discovery_session(self, seed_keywords: List[str] = None) -> DiscoverySession:
         """Start a new trend discovery session"""
@@ -109,70 +118,106 @@ class AutomatedTrendDiscovery:
             # Start discovery session
             session = await self.start_discovery_session(seed_keywords)
             
-            # STAGE 1: Multi-source trend discovery
-            logger.info("🔍 STAGE 1: Multi-source trend discovery")
-            trends_data = await self._discover_trends_multi_source(seed_keywords)
+            if self.use_ai_agent:
+                # Use AI-powered trend discovery
+                logger.info("🤖 Using AI Agent for intelligent trend discovery")
+                
+                # STAGE 1: AI-powered trend discovery and analysis
+                logger.info("🔍 STAGE 1: AI-powered trend discovery and analysis")
+                ai_trends = await self.trend_ai.analyze_trends(
+                    keywords=seed_keywords or ["trending", "viral", "popular"],
+                    mode=TrendAnalysisMode.DISCOVERY,
+                    categories=["fashion", "technology", "lifestyle", "entertainment"],
+                    geo="US",
+                    time_range="today 12-m"
+                )
+                
+                # Convert AI trends to legacy format for CEO validation
+                trends_data = self._convert_ai_trends_to_legacy(ai_trends)
+                
+                # STAGE 2: Enhanced trend analysis with AI insights
+                logger.info("📊 STAGE 2: Enhanced trend analysis with AI insights")
+                analyzed_trends = trends_data  # AI already analyzed
+                
+            else:
+                # Legacy multi-source discovery (fallback)
+                logger.info("🔍 STAGE 1: Multi-source trend discovery (Legacy)")
+                trends_data = await self._discover_trends_multi_source(seed_keywords)
+                
+                # STAGE 2: Trend analysis and scoring
+                logger.info("📊 STAGE 2: Trend analysis and scoring")
+                analyzed_trends = await self._analyze_trends(trends_data)
             
-            # STAGE 2: Trend analysis and scoring
-            logger.info("📊 STAGE 2: Trend analysis and scoring")
-            analyzed_trends = await self._analyze_trends(trends_data)
-            
-            # STAGE 3: CEO validation
-            logger.info("👔 STAGE 3: CEO validation")
+            # STAGE 3: CEO validation (works with both AI and legacy)
+            logger.info("🎯 STAGE 3: CEO validation")
             validated_opportunities = await self._validate_opportunities(analyzed_trends)
             
-            # STAGE 4: Session completion
+            # STAGE 4: Store and track results
+            logger.info("💾 STAGE 4: Store and track results")
+            await self._store_validated_opportunities(validated_opportunities)
+            
+            # If using AI agent, optimize strategy
+            if self.use_ai_agent and validated_opportunities:
+                # Convert validated opportunities back to AI format
+                ai_validated = await self._convert_to_ai_format(validated_opportunities)
+                
+                # Get AI strategy optimization
+                strategy = await self.trend_ai.optimize_trend_strategy(
+                    ai_validated,
+                    business_constraints={
+                        "budget": "moderate",
+                        "resources": "automated",
+                        "min_roi": 3.0
+                    }
+                )
+                
+                logger.info(f"🎯 AI Strategy Optimization: {strategy.get('status')}")
+            
+            # Update session
             session.end_time = datetime.now(timezone.utc)
-            session.execution_time = time.time() - start_time
             session.trends_discovered = len(trends_data)
             session.opportunities_validated = len(validated_opportunities)
-            session.opportunities_approved = len([o for o in validated_opportunities if o.validation_status == "approved"])
+            session.total_execution_time = time.time() - start_time
             session.status = "completed"
             
-            # Record performance metrics
-            self.performance_monitor.record_metric_with_labels(
-                "discovery_session_duration",
-                session.execution_time,
-                labels={"session_id": session.session_id}
-            )
-            
-            self.performance_monitor.record_metric_with_labels(
-                "trends_discovered_per_session",
-                session.trends_discovered,
-                labels={"session_id": session.session_id}
-            )
-            
-            self.performance_monitor.record_metric_with_labels(
-                "opportunities_approved_per_session",
-                session.opportunities_approved,
-                labels={"session_id": session.session_id}
-            )
-            
-            # Store session in history
             self.discovery_history.append(session)
             
-            logger.info(f"✅ Discovery session completed: {session.opportunities_approved} opportunities approved")
+            # Performance tracking
+            await self.performance_monitor.track_metric(
+                "trend_discovery_session",
+                {
+                    "session_id": session.session_id,
+                    "trends_discovered": len(trends_data),
+                    "opportunities_validated": len(validated_opportunities),
+                    "execution_time": session.total_execution_time,
+                    "ai_mode": self.use_ai_agent
+                }
+            )
+            
+            logger.info(f"✅ Discovery pipeline completed in {session.total_execution_time:.2f} seconds")
+            logger.info(f"   Trends discovered: {len(trends_data)}")
+            logger.info(f"   Opportunities validated: {len(validated_opportunities)}")
             
             return {
+                "status": "success",
                 "session": session,
                 "trends_discovered": trends_data,
                 "opportunities_validated": validated_opportunities,
-                "execution_time": session.execution_time,
-                "status": "success"
+                "ai_mode": self.use_ai_agent
             }
             
         except Exception as e:
             logger.error(f"❌ Discovery pipeline failed: {e}")
+            
             if self.active_session:
                 self.active_session.status = "failed"
                 self.active_session.errors.append(str(e))
-                self.active_session.end_time = datetime.now(timezone.utc)
-                self.active_session.execution_time = time.time() - start_time
             
             return {
                 "status": "error",
                 "error": str(e),
-                "execution_time": time.time() - start_time
+                "session": self.active_session
+
             }
     
     async def _discover_trends_multi_source(self, seed_keywords: List[str] = None) -> List[Dict[str, Any]]:
@@ -563,6 +608,89 @@ class AutomatedTrendDiscovery:
             logger.info("✅ Automated Trend Discovery Service cleaned up")
         except Exception as e:
             logger.error(f"❌ Cleanup failed: {e}")
+
+    def _convert_ai_trends_to_legacy(self, ai_trends: List[AITrendAnalysis]) -> List[Dict[str, Any]]:
+        """Convert AI trend analysis to legacy format for CEO validation"""
+        legacy_trends = []
+        
+        for ai_trend in ai_trends:
+            legacy_trend = {
+                "trend_id": ai_trend.trend_id,
+                "trend_name": ai_trend.trend_name,
+                "category": ai_trend.category,
+                "opportunity_score": ai_trend.market_opportunity_score,
+                "confidence_level": ai_trend.ai_confidence_score,
+                "market_size": ai_trend.market_size_estimate,
+                "competition_level": ai_trend.competitive_landscape.get("competition_level", "medium"),
+                "velocity": "high" if ai_trend.growth_velocity > 0.5 else "medium",
+                "geo_relevance": ["US"],  # Default for now
+                "audience_demographics": ai_trend.target_demographics,
+                "related_keywords": [ai_trend.trend_name],  # Can be enhanced
+                "social_sentiment": 0.8,  # Default positive sentiment
+                "news_sentiment": 0.7,  # Default positive sentiment
+                "competitor_activity": ai_trend.competitive_landscape,
+                "validation_status": "pending",
+                "created_at": ai_trend.analysis_timestamp,
+                "last_updated": ai_trend.analysis_timestamp,
+                
+                # AI-specific fields
+                "ai_analysis": {
+                    "pattern_type": ai_trend.pattern_type,
+                    "pattern_strength": ai_trend.pattern_strength,
+                    "lifecycle_stage": ai_trend.trend_lifecycle_stage,
+                    "predicted_success_rate": ai_trend.predicted_success_rate,
+                    "recommended_products": ai_trend.recommended_products,
+                    "design_themes": ai_trend.design_themes,
+                    "marketing_angles": ai_trend.marketing_angles,
+                    "pricing_strategy": ai_trend.pricing_strategy
+                }
+            }
+            legacy_trends.append(legacy_trend)
+        
+        return legacy_trends
+    
+    async def _convert_to_ai_format(self, validated_opportunities: List[TrendOpportunity]) -> List[AITrendAnalysis]:
+        """Convert validated opportunities back to AI format for strategy optimization"""
+        ai_trends = []
+        
+        for opp in validated_opportunities:
+            # Create AITrendAnalysis from TrendOpportunity
+            ai_trend = AITrendAnalysis(
+                trend_id=opp.trend_id,
+                trend_name=opp.trend_name,
+                category=opp.category,
+                ai_confidence_score=opp.confidence_level,
+                market_opportunity_score=opp.opportunity_score,
+                predicted_success_rate=opp.confidence_level * 0.9,
+                pattern_type="emerging",  # Default
+                pattern_strength=0.8,  # Default
+                trend_lifecycle_stage="growing",  # Default
+                target_demographics=opp.audience_demographics,
+                competitive_landscape=opp.competitor_activity,
+                market_size_estimate=opp.market_size,
+                growth_velocity=0.5 if opp.velocity == "high" else 0.3,
+                recommended_products=[],  # Will be filled by AI
+                design_themes=[],  # Will be filled by AI
+                marketing_angles=[],  # Will be filled by AI
+                pricing_strategy={},  # Will be filled by AI
+                data_sources=["automated_discovery"],
+                raw_data={"opportunity": opp.__dict__},
+                ai_models_used=["trend_analysis_ai"],
+                processing_time_ms=0
+            )
+            ai_trends.append(ai_trend)
+        
+        return ai_trends
+    
+    async def discover_trends_with_ai(self, seed_keywords: List[str] = None) -> List[AITrendAnalysis]:
+        """Direct access to AI-powered trend discovery"""
+        return await self.trend_ai.analyze_trends(
+            keywords=seed_keywords or ["trending", "viral", "popular"],
+            mode=TrendAnalysisMode.DISCOVERY,
+            categories=["fashion", "technology", "lifestyle", "entertainment"],
+            geo="US",
+            time_range="today 12-m"
+        )
 
 
 async def create_automated_trend_discovery(config: HeliosConfig) -> AutomatedTrendDiscovery:

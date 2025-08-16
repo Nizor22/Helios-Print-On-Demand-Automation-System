@@ -1,9 +1,6 @@
 """
-Helios Autonomous Store Orchestrator
-Coordinates all three main systems:
-1. Automated Trend Discovery (every 6 hours)
-2. Product Generation Pipeline
-3. Performance Optimization & A/B Testing
+Helios Orchestrator Service - Main controller for the autonomous store
+Coordinates all agents and services with priority-driven execution
 """
 
 import asyncio
@@ -15,14 +12,16 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from loguru import logger
 
+from ..agents.ceo import HeliosCEO
+from ..agents.trend_analysis_ai import TrendAnalysisAI, TrendAnalysisMode
 from ..config import HeliosConfig
-from ..services.automated_trend_discovery import AutomatedTrendDiscovery, create_automated_trend_discovery
-from ..services.product_generation_pipeline import ProductGenerationPipeline, create_product_generation_pipeline
-from ..services.performance_optimization import PerformanceOptimizationService, create_performance_optimization_service
-from ..services.google_cloud.scheduler_client import CloudSchedulerClient, setup_helios_schedules
-from ..services.google_cloud.firestore_client import FirestoreClient
-from ..services.google_cloud.redis_client import RedisCacheClient
 from ..utils.performance_monitor import PerformanceMonitor
+from .automated_trend_discovery import AutomatedTrendDiscovery, create_automated_trend_discovery
+from .product_generation_pipeline import ProductGenerationPipeline, create_product_generation_pipeline
+from .performance_optimization import PerformanceOptimizationService, create_performance_optimization_service
+from .google_cloud.cloud_scheduler_client import CloudSchedulerClient
+from .google_cloud.firestore_client import FirestoreClient
+from ..utils.redis_cache_client import RedisCacheClient
 
 
 @dataclass
@@ -47,6 +46,10 @@ class HeliosOrchestrator:
         self.config = config
         self.performance_monitor = PerformanceMonitor(config)
         
+        # Initialize AI agents
+        self.trend_ai: Optional[TrendAnalysisAI] = None
+        self.ceo_agent: Optional[HeliosCEO] = None
+        
         # Initialize core services
         self.trend_discovery: Optional[AutomatedTrendDiscovery] = None
         self.product_pipeline: Optional[ProductGenerationPipeline] = None
@@ -66,17 +69,35 @@ class HeliosOrchestrator:
         self.product_generation_interval = timedelta(hours=4)
         self.performance_analysis_interval = timedelta(hours=24)
         
-        logger.info("🚀 Helios Orchestrator initialized")
+        # AI agent configuration
+        self.use_ai_orchestration = True  # Enable AI-powered orchestration
+        
+        logger.info("🚀 Helios Orchestrator initialized with AI capabilities")
     
     async def initialize_services(self) -> bool:
         """Initialize all core services and cloud clients"""
         try:
             logger.info("🔧 Initializing Helios services...")
             
+            # Initialize AI agents first
+            if self.use_ai_orchestration:
+                logger.info("🤖 Initializing AI agents...")
+                self.trend_ai = TrendAnalysisAI(self.config)
+                self.ceo_agent = HeliosCEO(
+                    min_opportunity=self.config.min_opportunity_score,
+                    min_confidence=self.config.min_audience_confidence
+                )
+                logger.info("✅ AI agents initialized")
+            
             # Initialize core services
             self.trend_discovery = await create_automated_trend_discovery(self.config)
             self.product_pipeline = await create_product_generation_pipeline(self.config)
             self.performance_optimization = await create_performance_optimization_service(self.config)
+            
+            # Ensure trend discovery uses AI agent
+            if self.use_ai_orchestration and self.trend_discovery:
+                self.trend_discovery.use_ai_agent = True
+                logger.info("✅ Trend discovery configured to use AI agent")
             
             # Initialize cloud services (optional for development)
             try:
@@ -168,14 +189,27 @@ class HeliosOrchestrator:
             
             logger.info("🔍 Running automated trend discovery cycle...")
             
+            # Get seed keywords using AI if enabled
+            if self.use_ai_orchestration and self.trend_ai:
+                # Use AI to generate smart seed keywords based on market analysis
+                ai_keywords = await self._get_ai_generated_keywords()
+                seed_keywords = ai_keywords
+            else:
+                # Use default seed keywords
+                seed_keywords = await self._get_seed_keywords()
+            
             # Run discovery with seed keywords
-            seed_keywords = await self._get_seed_keywords()
             discovery_result = await self.trend_discovery.run_discovery_pipeline(seed_keywords)
             
             if discovery_result.get("status") == "success":
                 trends_data = discovery_result.get("trends_discovered", [])
                 validated_opportunities = discovery_result.get("opportunities_validated", [])
                 session = discovery_result.get("session")
+                
+                # If AI orchestration is enabled, get AI insights
+                if self.use_ai_orchestration and self.trend_ai and validated_opportunities:
+                    ai_insights = await self._get_ai_insights_for_opportunities(validated_opportunities)
+                    discovery_result["ai_insights"] = ai_insights
             else:
                 logger.error(f"❌ Discovery pipeline failed: {discovery_result.get('error')}")
                 return {"status": "error", "message": discovery_result.get("error")}
@@ -389,6 +423,80 @@ class HeliosOrchestrator:
             "tech accessories", "home decor trends", "wellness products",
             "pet accessories", "garden tools", "kitchen gadgets", "fitness gear"
         ]
+    
+    async def _get_ai_generated_keywords(self) -> List[str]:
+        """Generate intelligent seed keywords using AI based on market analysis"""
+        try:
+            logger.info("🤖 Generating AI-powered seed keywords...")
+            
+            # Get current market trends
+            market_trends = await self.trend_ai.analyze_trends(
+                keywords=["market trends", "consumer behavior", "emerging markets"],
+                mode=TrendAnalysisMode.DISCOVERY,
+                categories=["general"],
+                geo="US",
+                time_range="now 1-d"
+            )
+            
+            # Extract keywords from AI analysis
+            ai_keywords = []
+            for trend in market_trends[:5]:  # Top 5 trends
+                ai_keywords.append(trend.trend_name)
+                ai_keywords.extend(trend.marketing_angles[:2])  # Add marketing angles as keywords
+            
+            # Add some default keywords as fallback
+            default_keywords = ["trending", "viral", "popular", "hot", "new"]
+            ai_keywords.extend(default_keywords)
+            
+            # Remove duplicates and limit
+            unique_keywords = list(set(ai_keywords))[:20]
+            
+            logger.info(f"✅ Generated {len(unique_keywords)} AI-powered keywords")
+            return unique_keywords
+            
+        except Exception as e:
+            logger.warning(f"⚠️ AI keyword generation failed, using defaults: {e}")
+            return ["trending", "viral", "popular", "hot", "new"]
+    
+    async def _get_ai_insights_for_opportunities(self, opportunities: List[Any]) -> Dict[str, Any]:
+        """Get AI insights for validated opportunities"""
+        try:
+            insights = {
+                "total_opportunities": len(opportunities),
+                "ai_recommendations": [],
+                "strategy_optimization": None,
+                "priority_ranking": []
+            }
+            
+            # Convert opportunities to AI format for analysis
+            ai_trends = []
+            for opp in opportunities:
+                # Simple conversion - this would be more detailed in production
+                ai_trends.append({
+                    "trend_name": opp.trend_name,
+                    "opportunity_score": opp.opportunity_score,
+                    "category": opp.category
+                })
+            
+            # Get AI strategy optimization
+            if ai_trends:
+                strategy = await self.trend_ai.optimize_trend_strategy(
+                    ai_trends,
+                    business_constraints={
+                        "budget": "automated",
+                        "resources": "cloud-based",
+                        "min_roi": 3.0,
+                        "max_products_per_day": 50
+                    }
+                )
+                insights["strategy_optimization"] = strategy
+            
+            logger.info("✅ AI insights generated for opportunities")
+            return insights
+            
+        except Exception as e:
+            logger.error(f"❌ Failed to generate AI insights: {e}")
+            return {"error": str(e)}
     
     async def _get_existing_opportunities(self) -> List[Dict[str, Any]]:
         """Get existing trend opportunities from storage"""
