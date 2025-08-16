@@ -1,0 +1,75 @@
+# AI Agent Requirements for Helios Autonomous Store
+# These are additional dependencies specifically for AI features
+
+# Google Cloud AI Services
+google-cloud-aiplatform>=1.60.0
+google-cloud-language>=2.13.0
+google-cloud-translate>=3.15.0
+google-cloud-vision>=3.7.0
+google-cloud-vertexai>=1.60.0
+
+# Google Generative AI
+google-generativeai>=0.5.0
+google-ai-generativelanguage>=0.6.0
+
+# Machine Learning & AI
+transformers>=4.40.0
+torch>=2.2.0
+numpy>=1.24.0,<2.0.0
+pandas>=2.2.0
+scikit-learn>=1.4.0
+
+# Natural Language Processing
+nltk>=3.8.0
+spacy>=3.7.0
+textblob>=0.18.0
+
+# Data Analysis & Visualization
+matplotlib>=3.8.0
+seaborn>=0.13.0
+plotly>=5.20.0
+
+# API Clients for AI Services
+openai>=1.30.0  # For comparison/fallback
+anthropic>=0.25.0  # For comparison/fallback
+
+# Async AI Processing
+aiohttp>=3.9.0
+httpx[http2]>=0.27.0
+
+# AI Model Management
+mlflow>=2.12.0
+wandb>=0.16.0
+
+# Vector Databases (for AI memory)
+chromadb>=0.4.0
+pinecone-client>=3.0.0
+
+# Additional AI Utilities
+tenacity>=8.2.0  # For retry logic
+cachetools>=5.3.0  # For caching AI responses
+python-dotenv>=1.0.0  # For environment management
+
+# Monitoring & Observability
+opentelemetry-api>=1.24.0
+opentelemetry-sdk>=1.24.0
+opentelemetry-instrumentation>=0.45b0
+
+# Rate Limiting
+ratelimit>=2.2.1
+backoff>=2.2.1
+
+# Data Validation
+jsonschema>=4.21.0
+marshmallow>=3.21.0
+
+# Testing AI Components
+pytest-asyncio>=0.23.0
+pytest-mock>=3.14.0
+pytest-timeout>=2.3.0
+responses>=0.25.0
+
+# Documentation
+sphinx>=7.3.0
+sphinx-rtd-theme>=2.0.0
+myst-parser>=3.0.0

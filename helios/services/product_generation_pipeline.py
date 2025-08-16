@@ -16,6 +16,7 @@ from ..agents.creative import CreativeDirector
 from ..agents.marketing import MarketingCopywriter
 from ..agents.ethics import EthicalGuardianAgent
 from ..agents.publisher_agent import PrintifyPublisherAgent
+from ..agents.trend_analysis_ai import TrendAnalysisAI, TrendAnalysisMode, ProductPrediction
 from ..services.ethical_code import EthicalCodeService
 from ..services.copyright_review import CopyrightReviewService
 from ..services.external_apis.image_generation import ImageGenerationService
@@ -38,6 +39,7 @@ class ProductDesign:
     ethical_score: float = 0.0
     copyright_status: str = "pending"
     created_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
+    ai_enhanced: bool = False
 
 
 @dataclass
@@ -68,6 +70,9 @@ class MarketingCopy:
     call_to_action: str
     ethical_approval: bool = False
     created_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
+    bullet_points: List[str] = field(default_factory=list)
+    pricing_strategy: Dict[str, Any] = field(default_factory=dict)
+    ai_enhanced: bool = False
 
 
 @dataclass
@@ -125,17 +130,24 @@ class ProductGenerationPipeline:
         )
         self.performance_monitor = PerformanceMonitor(config)
         
+        # Initialize AI agent for enhanced product generation
+        self.trend_ai = TrendAnalysisAI(config)
+        
         # Pipeline configuration
         self.max_designs_per_trend = 5
         self.max_images_per_design = 3
         self.ethical_threshold = 0.8
         self.quality_threshold = 0.7
         
+        # AI enhancement configuration
+        self.use_ai_insights = True
+        self.ai_confidence_threshold = 0.75
+        
         # Session tracking
         self.active_session: Optional[GenerationSession] = None
         self.generation_history: List[GenerationSession] = []
         
-        logger.info("✅ Product Generation Pipeline initialized")
+        logger.info("✅ Product Generation Pipeline initialized with AI enhancements")
     
     async def start_generation_session(self, trend_opportunity: Dict[str, Any]) -> GenerationSession:
         """Start a new product generation session"""
@@ -158,23 +170,45 @@ class ProductGenerationPipeline:
             # Start generation session
             session = await self.start_generation_session(trend_opportunity)
             
-            # STAGE 1: Design concept generation
-            logger.info("🎨 STAGE 1: Design concept generation")
-            designs = await self._generate_design_concepts(trend_opportunity)
+            # Get AI insights if available
+            ai_insights = None
+            if self.use_ai_insights and "ai_analysis" in trend_opportunity:
+                ai_insights = trend_opportunity["ai_analysis"]
+                logger.info("🤖 Using AI insights for enhanced product generation")
             
-            # STAGE 2: Image generation
-            logger.info("🖼️ STAGE 2: Image generation")
-            all_images = await self._generate_images_for_designs(designs)
+            # STAGE 1: AI-enhanced design concept generation
+            logger.info("🎨 STAGE 1: AI-enhanced design concept generation")
+            designs = await self._generate_design_concepts(trend_opportunity, ai_insights)
             
-            # STAGE 3: Marketing copy generation
-            logger.info("📝 STAGE 3: Marketing copy generation")
-            marketing_copies = await self._generate_marketing_copy(designs)
+            # STAGE 2: Image generation with AI optimization
+            logger.info("🖼️ STAGE 2: Image generation with AI optimization")
+            all_images = await self._generate_images_for_designs(designs, ai_insights)
+            
+            # STAGE 3: AI-powered marketing copy generation
+            logger.info("📝 STAGE 3: AI-powered marketing copy generation")
+            marketing_copies = await self._generate_marketing_copy(designs, ai_insights)
             
             # STAGE 4: Ethical screening and validation
             logger.info("✅ STAGE 4: Ethical screening and validation")
             validated_packages = await self._validate_and_package_products(
                 designs, all_images, marketing_copies
             )
+            
+            # STAGE 5: AI product success prediction
+            if self.use_ai_insights and validated_packages:
+                logger.info("🔮 STAGE 5: AI product success prediction")
+                ai_predictions = await self._predict_product_success(
+                    validated_packages, trend_opportunity
+                )
+                
+                # Filter packages based on AI predictions
+                high_confidence_packages = [
+                    pkg for pkg, pred in zip(validated_packages, ai_predictions)
+                    if pred and pred.predicted_success_rate >= self.ai_confidence_threshold
+                ]
+                
+                logger.info(f"✅ {len(high_confidence_packages)}/{len(validated_packages)} products meet AI confidence threshold")
+                validated_packages = high_confidence_packages
             
             # STAGE 5: Session completion
             session.end_time = datetime.now(timezone.utc)
@@ -227,25 +261,48 @@ class ProductGenerationPipeline:
                 "execution_time": time.time() - start_time
             }
     
-    async def _generate_design_concepts(self, trend_opportunity: Dict[str, Any]) -> List[ProductDesign]:
-        """Generate design concepts using Creative Director agent"""
+    async def _generate_design_concepts(self, trend_opportunity: Dict[str, Any], ai_insights: Dict[str, Any] = None) -> List[ProductDesign]:
+        """Generate design concepts using Creative Director agent with AI enhancements"""
         designs = []
         trend_name = trend_opportunity.get("trend_name", "")
         related_keywords = trend_opportunity.get("related_keywords", [])
         audience_demographics = trend_opportunity.get("audience_demographics", {})
         
+        # Extract AI recommendations if available
+        ai_design_themes = []
+        ai_recommended_products = []
+        ai_marketing_angles = []
+        
+        if ai_insights:
+            ai_design_themes = ai_insights.get("design_themes", [])
+            ai_recommended_products = ai_insights.get("recommended_products", [])
+            ai_marketing_angles = ai_insights.get("marketing_angles", [])
+            
+            logger.info(f"🤖 Using AI-recommended themes: {ai_design_themes[:3]}")
+            logger.info(f"🤖 Using AI-recommended products: {[p.get('type') for p in ai_recommended_products[:3]]}")
+        
         try:
-            # Generate multiple design concepts
+            # Generate multiple design concepts with AI guidance
             for i in range(self.max_designs_per_trend):
+                # Use AI themes and recommendations if available
+                style_preferences = {
+                    "aesthetic": ai_design_themes[i % len(ai_design_themes)] if ai_design_themes else "modern_vintage",
+                    "color_palette": "ai_optimized" if ai_insights else "retro_inspired",
+                    "typography": "bold_clean",
+                    "ai_guided": bool(ai_insights)
+                }
+                
+                # Enhance keywords with AI insights
+                enhanced_keywords = related_keywords.copy()
+                if ai_marketing_angles and i < len(ai_marketing_angles):
+                    enhanced_keywords.append(ai_marketing_angles[i])
+                
                 design_concept = await self.creative_director.generate_design_concept(
                     trend_name=trend_name,
-                    keywords=related_keywords,
+                    keywords=enhanced_keywords,
                     audience=audience_demographics,
-                    style_preferences={
-                        "aesthetic": "modern_vintage",
-                        "color_palette": "retro_inspired",
-                        "typography": "bold_clean"
-                    }
+                    style_preferences=style_preferences,
+                    ai_recommendations=ai_recommended_products[i] if i < len(ai_recommended_products) else None
                 )
                 
                 if design_concept and design_concept.get("status") == "success":
@@ -257,25 +314,26 @@ class ProductGenerationPipeline:
                         design_concept=design_data.get("concept", ""),
                         design_elements=design_data.get("elements", []),
                         color_scheme=design_data.get("colors", []),
-                        style_preferences=design_data.get("style", {}),
+                        style_preferences=style_preferences,
                         target_audience=audience_demographics,
-                        design_prompt=design_data.get("prompt", "")
+                        design_prompt=design_data.get("prompt", ""),
+                        ai_enhanced=bool(ai_insights)
                     )
                     
                     designs.append(design)
-                    logger.info(f"🎨 Generated design concept {i+1}: {design.design_concept[:50]}...")
+                    logger.info(f"🎨 Generated {'AI-enhanced' if ai_insights else ''} design concept {i+1}: {design.design_concept[:50]}...")
                 
                 # Small delay between generations
                 await asyncio.sleep(1)
             
-            logger.info(f"🎨 Generated {len(designs)} design concepts")
+            logger.info(f"🎨 Generated {len(designs)} design concepts ({sum(1 for d in designs if hasattr(d, 'ai_enhanced') and d.ai_enhanced)} AI-enhanced)")
             return designs
             
         except Exception as e:
             logger.error(f"❌ Design concept generation failed: {e}")
             return []
     
-    async def _generate_images_for_designs(self, designs: List[ProductDesign]) -> Dict[str, List[GeneratedImage]]:
+    async def _generate_images_for_designs(self, designs: List[ProductDesign], ai_insights: Dict[str, Any] = None) -> Dict[str, List[GeneratedImage]]:
         """Generate images for each design concept"""
         all_images = {}
         
@@ -324,43 +382,113 @@ class ProductGenerationPipeline:
         logger.info(f"🖼️ Generated {total_images} images for {len(designs)} designs")
         return all_images
     
-    async def _generate_marketing_copy(self, designs: List[ProductDesign]) -> List[MarketingCopy]:
-        """Generate marketing copy for each design"""
+    async def _generate_marketing_copy(self, designs: List[ProductDesign], ai_insights: Dict[str, Any] = None) -> List[MarketingCopy]:
+        """Generate marketing copy for designs with AI enhancements"""
         marketing_copies = []
         
-        for design in designs:
-            try:
-                copy_result = await self.marketing_copywriter.generate_product_copy(
-                    product_name=design.design_concept,
-                    design_elements=design.design_elements,
+        # Extract AI marketing angles if available
+        ai_marketing_angles = []
+        ai_pricing_strategy = {}
+        
+        if ai_insights:
+            ai_marketing_angles = ai_insights.get("marketing_angles", [])
+            ai_pricing_strategy = ai_insights.get("pricing_strategy", {})
+            logger.info(f"🤖 Using {len(ai_marketing_angles)} AI-generated marketing angles")
+        
+        try:
+            for i, design in enumerate(designs):
+                # Use AI marketing angle if available
+                marketing_angle = None
+                if ai_marketing_angles and i < len(ai_marketing_angles):
+                    marketing_angle = ai_marketing_angles[i]
+                
+                copy_result = await self.marketing_copywriter.generate_marketing_copy(
+                    product_concept=design.design_concept,
                     target_audience=design.target_audience,
-                    trend_context=design.trend_name,
-                    style_preferences=design.style_preferences
+                    keywords=[design.trend_name] + design.design_elements[:3],
+                    tone="engaging_professional",
+                    ai_marketing_angle=marketing_angle,
+                    ai_pricing_strategy=ai_pricing_strategy
                 )
                 
                 if copy_result and copy_result.get("status") == "success":
                     copy_data = copy_result.get("copy_data", {})
                     
                     marketing_copy = MarketingCopy(
-                        copy_id=f"copy_{int(time.time())}_{len(marketing_copies)}",
+                        copy_id=f"copy_{int(time.time())}_{i}",
                         design_id=design.design_id,
-                        product_title=copy_data.get("title", ""),
-                        product_description=copy_data.get("description", ""),
+                        title=copy_data.get("title", ""),
+                        description=copy_data.get("description", ""),
+                        bullet_points=copy_data.get("bullet_points", []),
                         tags=copy_data.get("tags", []),
-                        social_media_copy=copy_data.get("social_copy", {}),
                         seo_keywords=copy_data.get("seo_keywords", []),
-                        call_to_action=copy_data.get("cta", "")
+                        call_to_action=copy_data.get("call_to_action", ""),
+                        pricing_strategy=ai_pricing_strategy if ai_insights else {},
+                        ai_enhanced=bool(ai_insights and marketing_angle)
                     )
                     
                     marketing_copies.append(marketing_copy)
-                    logger.info(f"📝 Generated marketing copy for design {design.design_id}")
+                    logger.info(f"📝 Generated {'AI-enhanced' if marketing_copy.ai_enhanced else ''} marketing copy: {marketing_copy.title[:50]}...")
                 
-            except Exception as e:
-                logger.error(f"❌ Marketing copy generation failed for design {design.design_id}: {e}")
-                continue
+                await asyncio.sleep(0.5)
+            
+            logger.info(f"📝 Generated {len(marketing_copies)} marketing copies ({sum(1 for c in marketing_copies if hasattr(c, 'ai_enhanced') and c.ai_enhanced)} AI-enhanced)")
+            return marketing_copies
+            
+        except Exception as e:
+            logger.error(f"❌ Marketing copy generation failed: {e}")
+            return []
+    
+    async def _predict_product_success(
+        self,
+        product_packages: List[ProductPackage],
+        trend_opportunity: Dict[str, Any]
+    ) -> List[Optional[ProductPrediction]]:
+        """Predict product success using AI"""
+        predictions = []
         
-        logger.info(f"📝 Generated marketing copy for {len(marketing_copies)} designs")
-        return marketing_copies
+        try:
+            # Convert trend opportunity to AI format if needed
+            trend_analysis = None
+            if "ai_analysis" in trend_opportunity:
+                # Use existing AI analysis
+                trend_analysis = trend_opportunity["ai_analysis"]
+            
+            for package in product_packages:
+                try:
+                    # Create product concept for prediction
+                    product_concept = {
+                        "design_concept": package.design.design_concept,
+                        "design_elements": package.design.design_elements,
+                        "marketing_copy": package.marketing_copy.title,
+                        "target_audience": package.design.target_audience,
+                        "images_count": len(package.images),
+                        "product_type": "print-on-demand"
+                    }
+                    
+                    # Get AI prediction
+                    if trend_analysis:
+                        prediction = await self.trend_ai.predict_product_success(
+                            trend_analysis,
+                            product_concept
+                        )
+                        predictions.append(prediction)
+                        
+                        logger.info(f"🔮 AI prediction for {package.package_id}: {prediction.predicted_success_rate:.2%} success rate")
+                    else:
+                        predictions.append(None)
+                        
+                except Exception as e:
+                    logger.warning(f"Failed to predict success for {package.package_id}: {e}")
+                    predictions.append(None)
+                
+                await asyncio.sleep(0.5)  # Rate limiting
+            
+            return predictions
+            
+        except Exception as e:
+            logger.error(f"❌ Product success prediction failed: {e}")
+            return [None] * len(product_packages)
     
     async def _validate_and_package_products(
         self,
@@ -443,7 +571,7 @@ class ProductGenerationPipeline:
                 content=marketing_copy.product_description,
                 content_type="marketing_copy",
                 context={
-                    "product_title": marketing_copy.product_title,
+                    "product_title": marketing_copy.title,
                     "target_audience": design.target_audience,
                     "tags": marketing_copy.tags
                 }
@@ -516,7 +644,7 @@ class ProductGenerationPipeline:
                 content=marketing_copy.product_description,
                 content_type="marketing",
                 context={
-                    "product_title": marketing_copy.product_title,
+                    "product_title": marketing_copy.title,
                     "tags": marketing_copy.tags
                 }
             )
@@ -564,8 +692,8 @@ class ProductGenerationPipeline:
             try:
                 # Prepare product data for publishing
                 product_data = {
-                    "title": package.marketing_copy.product_title,
-                    "description": package.marketing_copy.product_description,
+                    "title": package.marketing_copy.title,
+                    "description": package.marketing_copy.description,
                     "tags": package.marketing_copy.tags,
                     "images": [img.image_url for img in package.images if img.image_url],
                     "design_concept": package.design.design_concept,
