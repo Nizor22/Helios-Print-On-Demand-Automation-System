@@ -13,7 +13,6 @@ from loguru import logger
 
 from ..agents.ceo import HeliosCEO
 from ..agents.zeitgeist import ZeitgeistAgent
-from ..agents.trend_analysis_ai import TrendAnalysisAI, TrendAnalysisMode, TrendAnalysis as AITrendAnalysis
 from ..services.mcp_integration.google_trends_client import GoogleTrendsClient
 from ..services.mcp_integration.social_trends_scanner import SocialTrendsScanner
 from ..services.mcp_integration.news_sentiment_analyzer import NewsSentimentAnalyzer
@@ -71,7 +70,12 @@ class AutomatedTrendDiscovery:
         self.zeitgeist_agent = ZeitgeistAgent()
         
         # Initialize the new AI agent for intelligent trend analysis
-        self.trend_ai = TrendAnalysisAI(config)
+        try:
+            from ..agents.trend_analysis_ai import TrendAnalysisAI
+            self.trend_ai = TrendAnalysisAI(config)
+        except ImportError as e:
+            logger.warning(f"⚠️ TrendAnalysisAI not available: {e}")
+            self.trend_ai = None
         
         # Keep legacy clients for backward compatibility
         self.google_trends_client = GoogleTrendsClient()
@@ -126,7 +130,7 @@ class AutomatedTrendDiscovery:
                 logger.info("🔍 STAGE 1: AI-powered trend discovery and analysis")
                 ai_trends = await self.trend_ai.analyze_trends(
                     keywords=seed_keywords or ["trending", "viral", "popular"],
-                    mode=TrendAnalysisMode.DISCOVERY,
+                    mode="discovery",  # Use string instead of enum to avoid import issues
                     categories=["fashion", "technology", "lifestyle", "entertainment"],
                     geo="US",
                     time_range="today 12-m"
@@ -220,6 +224,19 @@ class AutomatedTrendDiscovery:
 
             }
     
+    async def _store_validated_opportunities(self, validated_opportunities: List[TrendOpportunity]) -> None:
+        """Store validated opportunities (no-op if storage not configured).
+
+        In production this would persist to Firestore/Sheets. For local/dev we
+        simply log and return to keep the pipeline progressing.
+        """
+        try:
+            count = len(validated_opportunities or [])
+            logger.info(f"💾 Storing {count} validated opportunities (dev mode)")
+            # Extend here to write to a DB if desired
+        except Exception as e:
+            logger.warning(f"⚠️ Failed to store validated opportunities (skipping): {e}")
+
     async def _discover_trends_multi_source(self, seed_keywords: List[str] = None) -> List[Dict[str, Any]]:
         """Discover trends from multiple sources in parallel"""
         tasks = []
@@ -609,7 +626,7 @@ class AutomatedTrendDiscovery:
         except Exception as e:
             logger.error(f"❌ Cleanup failed: {e}")
 
-    def _convert_ai_trends_to_legacy(self, ai_trends: List[AITrendAnalysis]) -> List[Dict[str, Any]]:
+    def _convert_ai_trends_to_legacy(self, ai_trends: List[Any]) -> List[Dict[str, Any]]:
         """Convert AI trend analysis to legacy format for CEO validation"""
         legacy_trends = []
         
@@ -649,7 +666,7 @@ class AutomatedTrendDiscovery:
         
         return legacy_trends
     
-    async def _convert_to_ai_format(self, validated_opportunities: List[TrendOpportunity]) -> List[AITrendAnalysis]:
+    async def _convert_to_ai_format(self, validated_opportunities: List[TrendOpportunity]) -> List[Any]:
         """Convert validated opportunities back to AI format for strategy optimization"""
         ai_trends = []
         
@@ -682,11 +699,11 @@ class AutomatedTrendDiscovery:
         
         return ai_trends
     
-    async def discover_trends_with_ai(self, seed_keywords: List[str] = None) -> List[AITrendAnalysis]:
+    async def discover_trends_with_ai(self, seed_keywords: List[str] = None) -> List[Any]:
         """Direct access to AI-powered trend discovery"""
         return await self.trend_ai.analyze_trends(
             keywords=seed_keywords or ["trending", "viral", "popular"],
-            mode=TrendAnalysisMode.DISCOVERY,
+            mode="discovery",  # Use string instead of enum to avoid import issues
             categories=["fashion", "technology", "lifestyle", "entertainment"],
             geo="US",
             time_range="today 12-m"

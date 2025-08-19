@@ -70,7 +70,19 @@ def mock_google_trends_client():
     """Create a mock Google Trends client"""
     client = AsyncMock()
     client.get_trend_data = AsyncMock(return_value={"status": "success", "data": {}})
+    client.get_interest_over_time = AsyncMock(return_value={"status": "success", "data": {}})
+    client.get_related_queries = AsyncMock(return_value={"status": "success", "data": {}})
+    client.get_related_topics = AsyncMock(return_value={"status": "success", "data": {}})
     return client
+
+
+@pytest.fixture
+def mock_performance_monitor():
+    """Create a mock performance monitor"""
+    monitor = AsyncMock()
+    monitor.track_metric = AsyncMock()
+    monitor.close = AsyncMock()
+    return monitor
 
 
 class TestTrendAnalysisAI:
@@ -96,12 +108,12 @@ class TestTrendAnalysisAI:
             mock_trends.assert_called_once()
     
     @pytest.mark.asyncio
-    async def test_analyze_trends_discovery_mode(self, mock_config, mock_mcp_client, mock_vertex_ai_client):
+    async def test_analyze_trends_discovery_mode(self, mock_config, mock_mcp_client, mock_vertex_ai_client, mock_performance_monitor):
         """Test trend analysis in discovery mode"""
         with patch('helios.agents.trend_analysis_ai.GoogleMCPClient', return_value=mock_mcp_client), \
              patch('helios.agents.trend_analysis_ai.VertexAIClient', return_value=mock_vertex_ai_client), \
              patch('helios.agents.trend_analysis_ai.GoogleTrendsClient'), \
-             patch('helios.agents.trend_analysis_ai.PerformanceMonitor'):
+             patch('helios.agents.trend_analysis_ai.PerformanceMonitor', return_value=mock_performance_monitor):
             
             ai_agent = TrendAnalysisAI(mock_config)
             
@@ -129,7 +141,7 @@ class TestTrendAnalysisAI:
             mock_mcp_client.discover_trends.assert_called_once()
     
     @pytest.mark.asyncio
-    async def test_analyze_trends_filters_by_confidence(self, mock_config, mock_mcp_client, mock_vertex_ai_client):
+    async def test_analyze_trends_filters_by_confidence(self, mock_config, mock_mcp_client, mock_vertex_ai_client, mock_performance_monitor):
         """Test that trends are filtered by confidence threshold"""
         # Set up mock to return trends with different confidence scores
         mock_mcp_client.discover_trends.return_value = {
@@ -155,7 +167,7 @@ class TestTrendAnalysisAI:
         with patch('helios.agents.trend_analysis_ai.GoogleMCPClient', return_value=mock_mcp_client), \
              patch('helios.agents.trend_analysis_ai.VertexAIClient', return_value=mock_vertex_ai_client), \
              patch('helios.agents.trend_analysis_ai.GoogleTrendsClient'), \
-             patch('helios.agents.trend_analysis_ai.PerformanceMonitor'):
+             patch('helios.agents.trend_analysis_ai.PerformanceMonitor', return_value=mock_performance_monitor):
             
             ai_agent = TrendAnalysisAI(mock_config)
             
@@ -294,7 +306,7 @@ class TestTrendAnalysisAI:
             assert "MCP server error" in str(exc_info.value)
     
     @pytest.mark.asyncio
-    async def test_pattern_recognition(self, mock_config, mock_mcp_client, mock_vertex_ai_client):
+    async def test_pattern_recognition(self, mock_config, mock_mcp_client, mock_vertex_ai_client, mock_performance_monitor):
         """Test pattern recognition functionality"""
         # Mock Vertex AI to return specific patterns
         mock_vertex_ai_client.generate_text.return_value = '''
@@ -314,7 +326,7 @@ class TestTrendAnalysisAI:
         with patch('helios.agents.trend_analysis_ai.GoogleMCPClient', return_value=mock_mcp_client), \
              patch('helios.agents.trend_analysis_ai.VertexAIClient', return_value=mock_vertex_ai_client), \
              patch('helios.agents.trend_analysis_ai.GoogleTrendsClient'), \
-             patch('helios.agents.trend_analysis_ai.PerformanceMonitor'):
+             patch('helios.agents.trend_analysis_ai.PerformanceMonitor', return_value=mock_performance_monitor):
             
             ai_agent = TrendAnalysisAI(mock_config)
             

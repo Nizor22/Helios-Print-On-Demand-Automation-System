@@ -12,7 +12,15 @@ class ZeitgeistAgent:
 
     def __init__(self) -> None:
         self.config = load_config()
-        self.mcp_client = MCPClient.from_env(self.config.google_mcp_url, self.config.google_mcp_auth_token)
+        # Initialize MCP client conditionally to avoid import issues
+        try:
+            from ..services.mcp_integration.mcp_client import GoogleMCPClient
+            self.mcp_client = GoogleMCPClient(
+                server_url=self.config.google_mcp_url,
+                auth_token=self.config.google_mcp_auth_token
+            ) if self.config.google_mcp_url else None
+        except ImportError:
+            self.mcp_client = None
         self.start_time = None
 
     async def run(self, seed: str | None = None) -> Dict[str, Any]:

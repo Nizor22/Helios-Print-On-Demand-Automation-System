@@ -1,0 +1,49 @@
+{
+  "audit_timestamp": "2025-08-19T21:49:06Z",
+  "project_id": "helios-pod-system",
+  "project_name": "Helios POD System",
+  "audit_type": "container_audit",
+  "summary": {
+    "total_gcr_repositories": 0,
+    "total_gcr_images": 0,
+    "total_gcr_size_bytes": 0,
+    "untagged_gcr_images": 0,
+    "large_gcr_images": 0,
+    "old_gcr_images": 0,
+    "total_artifact_registry_repositories": 2,
+    "docker_artifact_repositories": 1,
+    "maven_artifact_repositories": 0,
+    "npm_artifact_repositories": 0,
+    "total_kubernetes_clusters": 0,
+    "running_kubernetes_clusters": 0,
+    "stopped_kubernetes_clusters": 0,
+    "autopilot_kubernetes_clusters": 0,
+    "large_kubernetes_clusters": 0
+  },
+  "gcr": {
+    "images": []
+  },
+  "artifact_registry": {
+    "repositories": [
+      {
+        "name": "REPOSITORY",
+        "format": "FORMAT",
+        "create_time": "CREATE_TIME"
+      },
+      {
+        "name": "cloud-run-source-deploy",
+        "format": "DOCKER",
+        "create_time": "2025-08-18T18:26:26"
+      }
+    ]
+  },
+  "kubernetes": {
+    "clusters": []
+  },
+  "recommendations": [
+    "Implement container image lifecycle policies",
+    "Set up automated container image cleanup",
+    "Use multi-stage builds to reduce container image sizes",
+    "Consider using Artifact Registry instead of GCR for new projects"
+  ]
+}

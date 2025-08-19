@@ -1,0 +1,134 @@
+{
+  "audit_timestamp": "2025-08-19T21:49:10Z",
+  "project_id": "helios-pod-system",
+  "project_name": "Helios POD System",
+  "audit_type": "security_audit",
+  "summary": {
+    "total_iam_bindings": 1,
+    "owner_role_bindings": 0,
+    "admin_role_bindings": 0,
+    "service_account_bindings": 1,
+    "public_access_bindings": 0,
+    "total_service_accounts": 5,
+    "disabled_service_accounts": 0,
+    "service_accounts_without_display_name": 0,
+    "total_vpc_networks": 1,
+    "auto_created_networks": 1,
+    "total_firewall_rules": 4,
+    "public_firewall_rules": 3,
+    "total_secrets": 2,
+    "secrets_without_labels": 2,
+    "total_cloud_kms_keyrings": 0,
+    "total_cloud_kms_keys": 0
+  },
+  "iam": {
+    "bindings": [
+      {
+        "role": "['roles/aiplatform.serviceAgent',",
+        "members": "'roles/aiplatform.user', 'roles/artifactregistry.admin', 'roles/artifactregistry.serviceAgent', 'roles/cloudaicompanion.serviceAgent', 'roles/cloudbuild.builds.builder', 'roles/cloudbuild.builds.editor', 'roles/cloudbuild.serviceAgent', 'roles/cloudfunctions.serviceAgent', 'roles/cloudscheduler.serviceAgent', 'roles/cloudtasks.serviceAgent', 'roles/compute.serviceAgent', 'roles/containerregistry.ServiceAgent', 'roles/datastore.owner', 'roles/datastore.user', 'roles/editor', 'roles/firebase.managementServiceAgent', 'roles/firebase.sdkAdminServiceAgent', 'roles/firebaserules.system', 'roles/firestore.serviceAgent', 'roles/iam.serviceAccountTokenCreator', 'roles/iam.serviceAccountUser', 'roles/ml.serviceAgent', 'roles/owner', 'roles/pubsub.serviceAgent', 'roles/run.admin', 'roles/run.developer', 'roles/run.invoker', 'roles/run.serviceAgent', 'roles/secretmanager.secretAccessor', 'roles/serviceusage.serviceUsageConsumer', 'roles/storage.admin', 'roles/storage.objectAdmin', 'roles/storage.objectViewer'] [['serviceAccount:helios-vertex-ai@helios-pod-system.iam.gserviceaccount.com', 'serviceAccount:service-658997361183@gcp-sa-aiplatform.iam.gserviceaccount.com'], ['serviceAccount:helios-automation-sa@helios-pod-system.iam.gserviceaccount.com', 'serviceAccount:helios-autonomous-sa@helios-pod-system.iam.gserviceaccount.com', 'serviceAccount:helios-vertex-ai@helios-pod-system.iam.gserviceaccount.com'], ['serviceAccount:658997361183@cloudbuild.gserviceaccount.com'], ['serviceAccount:service-658997361183@gcp-sa-artifactregistry.iam.gserviceaccount.com'], ['serviceAccount:service-658997361183@gcp-sa-cloudaicompanion.iam.gserviceaccount.com'], ['serviceAccount:658997361183@cloudbuild.gserviceaccount.com', 'serviceAccount:service-658997361183@compute-system.iam.gserviceaccount.com'], ['serviceAccount:service-658997361183@serverless-robot-prod.iam.gserviceaccount.com', 'user:farukhzoda.n@gmail.com'], ['serviceAccount:service-658997361183@gcp-sa-cloudbuild.iam.gserviceaccount.com'], ['serviceAccount:service-658997361183@gcf-admin-robot.iam.gserviceaccount.com'], ['serviceAccount:service-658997361183@gcp-sa-cloudscheduler.iam.gserviceaccount.com'], ['serviceAccount:service-658997361183@gcp-sa-cloudtasks.iam.gserviceaccount.com'], ['serviceAccount:service-658997361183@compute-system.iam.gserviceaccount.com'], ['serviceAccount:service-658997361183@containerregistry.iam.gserviceaccount.com'], ['serviceAccount:helios-vertex-ai@helios-pod-system.iam.gserviceaccount.com'], ['serviceAccount:helios-automation-sa@helios-pod-system.iam.gserviceaccount.com', 'serviceAccount:helios-vertex-ai@helios-pod-system.iam.gserviceaccount.com'], ['serviceAccount:658997361183@cloudbuild.gserviceaccount.com', 'serviceAccount:658997361183@cloudservices.gserviceaccount.com', 'serviceAccount:helios-pod-system@appspot.gserviceaccount.com', 'serviceAccount:service-658997361183@compute-system.iam.gserviceaccount.com'], ['serviceAccount:service-658997361183@gcp-sa-firebase.iam.gserviceaccount.com'], ['serviceAccount:firebase-adminsdk-fbsvc@helios-pod-system.iam.gserviceaccount.com'], ['serviceAccount:service-658997361183@firebase-rules.iam.gserviceaccount.com'], ['serviceAccount:service-658997361183@gcp-sa-firestore.iam.gserviceaccount.com'], ['serviceAccount:firebase-adminsdk-fbsvc@helios-pod-system.iam.gserviceaccount.com'], ['serviceAccount:658997361183@cloudbuild.gserviceaccount.com', 'serviceAccount:service-658997361183@compute-system.iam.gserviceaccount.com'], ['serviceAccount:service-658997361183@cloud-ml.google.com.iam.gserviceaccount.com'], ['user:farukhzoda.n@gmail.com'], ['serviceAccount:service-658997361183@gcp-sa-pubsub.iam.gserviceaccount.com'], ['serviceAccount:658997361183@cloudbuild.gserviceaccount.com', 'user:farukhzoda.n@gmail.com'], ['serviceAccount:658997361183@cloudbuild.gserviceaccount.com'], ['serviceAccount:helios-autonomous-sa@helios-pod-system.iam.gserviceaccount.com'], ['deleted:serviceAccount:service-658997361183@serverless-robot-prod.iam.gserviceaccount.com?uid=111546232438550961849', 'serviceAccount:service-658997361183@serverless-robot-prod.iam.gserviceaccount.com'], ['serviceAccount:helios-automation-sa@helios-pod-system.iam.gserviceaccount.com', 'serviceAccount:helios-autonomous-sa@helios-pod-system.iam.gserviceaccount.com', 'serviceAccount:helios-vertex-ai@helios-pod-system.iam.gserviceaccount.com'], ['user:farukhzoda.n@gmail.com'], ['serviceAccount:658997361183@cloudbuild.gserviceaccount.com', 'user:farukhzoda.n@gmail.com'], ['serviceAccount:helios-automation-sa@helios-pod-system.iam.gserviceaccount.com', 'serviceAccount:helios-vertex-ai@helios-pod-system.iam.gserviceaccount.com'], ['deleted:serviceAccount:service-658997361183@serverless-robot-prod.iam.gserviceaccount.com?uid=111546232438550961849', 'serviceAccount:helios-automation-sa@helios-pod-system.iam.gserviceaccount.com']] ",
+        "high_privilege": false,
+        "public_access": false
+      }
+    ]
+  },
+  "service_accounts": {
+    "accounts": [
+      {
+        "email": "helios-pod-system@appspot.gserviceaccount.com",
+        "display_name": "App",
+        "disabled": false
+      },
+      {
+        "email": "helios-automation-sa@helios-pod-system.iam.gserviceaccount.com",
+        "display_name": "False",
+        "disabled": false
+      },
+      {
+        "email": "helios-autonomous-sa@helios-pod-system.iam.gserviceaccount.com",
+        "display_name": "Helios",
+        "disabled": false
+      },
+      {
+        "email": "firebase-adminsdk-fbsvc@helios-pod-system.iam.gserviceaccount.com",
+        "display_name": "firebase-adminsdk",
+        "disabled": false
+      },
+      {
+        "email": "helios-vertex-ai@helios-pod-system.iam.gserviceaccount.com",
+        "display_name": "Helios",
+        "disabled": false
+      }
+    ]
+  },
+  "network_security": {
+    "networks": [
+      {
+        "name": "default",
+        "subnet_mode": "AUTO",
+        "auto_created": true
+      }
+    ],
+    "firewall_rules": [
+      {
+        "name": "default-allow-icmp",
+        "network": "default",
+        "source_ranges": "0.0.0.0/0",
+        "ports": "[None]",
+        "direction": "INGRESS",
+        "public_access": true
+      },
+      {
+        "name": "default-allow-internal",
+        "network": "default",
+        "source_ranges": "10.128.0.0/9",
+        "ports": "[['0-65535'],",
+        "direction": "['0-65535'],",
+        "public_access": false
+      },
+      {
+        "name": "default-allow-rdp",
+        "network": "default",
+        "source_ranges": "0.0.0.0/0",
+        "ports": "[['3389']]",
+        "direction": "INGRESS",
+        "public_access": true
+      },
+      {
+        "name": "default-allow-ssh",
+        "network": "default",
+        "source_ranges": "0.0.0.0/0",
+        "ports": "[['22']]",
+        "direction": "INGRESS",
+        "public_access": true
+      }
+    ]
+  },
+  "secret_manager": {
+    "secrets": [
+      {
+        "name": "gemini-api-key",
+        "create_time": "2025-08-19T00:25:32",
+        "labels": "",
+        "has_labels": false
+      },
+      {
+        "name": "printify-api-token",
+        "create_time": "2025-08-19T00:25:24",
+        "labels": "",
+        "has_labels": false
+      }
+    ]
+  },
+  "cloud_kms": {
+    "keyrings": [],
+    "keys": []
+  },
+  "recommendations": [
+    "Review 3 public firewall rules - restrict access to specific IP ranges",
+    "Add labels to 2 secrets for better organization and security",
+    "Enable Cloud Security Command Center for advanced threat detection",
+    "Implement regular security audits and access reviews",
+    "Enable VPC Service Controls to restrict API access",
+    "Set up security monitoring and alerting"
+  ]
+}

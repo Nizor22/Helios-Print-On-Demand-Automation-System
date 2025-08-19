@@ -104,6 +104,25 @@ class HeliosConfig:
     enable_news_analyzer: bool = True
     enable_competitor_intelligence: bool = True
     
+    # MCP Tool Rate Limits
+    google_trends_rate_limit: int = 100  # requests per hour
+    social_media_rate_limit: int = 200   # requests per hour
+    news_analyzer_rate_limit: int = 150  # requests per hour
+    
+    # External APIs Configuration
+    etsy_api_key: Optional[str] = None
+    printify_base_url: str = "https://api.printify.com/v1"
+    printify_rate_limit: float = 0.5  # seconds between requests
+    printify_retry_attempts: int = 3
+    etsy_base_url: str = "https://openapi.etsy.com/v3"
+    etsy_rate_limit: float = 1.0  # seconds between requests
+    etsy_retry_attempts: int = 3
+    
+    # Google Workspace Integration
+    google_sheets_tracking_id: Optional[str] = None
+    google_drive_root_folder_id: Optional[str] = None
+    sheets_update_frequency: str = "real_time"  # or "batch"
+    
     # Performance Monitoring
     enable_performance_monitoring: bool = True
     enable_cloud_monitoring: bool = True
@@ -245,6 +264,25 @@ def load_config(env_path: Optional[Path] = None) -> HeliosConfig:
         enable_social_media_scanner=parse_bool(os.getenv("ENABLE_SOCIAL_MEDIA_SCANNER"), True),
         enable_news_analyzer=parse_bool(os.getenv("ENABLE_NEWS_ANALYZER"), True),
         enable_competitor_intelligence=parse_bool(os.getenv("ENABLE_COMPETITOR_INTELLIGENCE"), True),
+        
+        # MCP Tool Rate Limits
+        google_trends_rate_limit=parse_int(os.getenv("GOOGLE_TRENDS_RATE_LIMIT")) or 100,
+        social_media_rate_limit=parse_int(os.getenv("SOCIAL_MEDIA_RATE_LIMIT")) or 200,
+        news_analyzer_rate_limit=parse_int(os.getenv("NEWS_ANALYZER_RATE_LIMIT")) or 150,
+        
+        # External APIs Configuration
+        etsy_api_key=os.getenv("ETSY_API_KEY"),
+        printify_base_url=os.getenv("PRINTIFY_BASE_URL", "https://api.printify.com/v1"),
+        printify_rate_limit=parse_float(os.getenv("PRINTIFY_RATE_LIMIT"), 0.5),
+        printify_retry_attempts=parse_int(os.getenv("PRINTIFY_RETRY_ATTEMPTS"), 3),
+        etsy_base_url=os.getenv("ETSY_BASE_URL", "https://openapi.etsy.com/v3"),
+        etsy_rate_limit=parse_float(os.getenv("ETSY_RATE_LIMIT"), 1.0),
+        etsy_retry_attempts=parse_int(os.getenv("ETSY_RETRY_ATTEMPTS"), 3),
+        
+        # Google Workspace Integration
+        google_sheets_tracking_id=os.getenv("GOOGLE_SHEETS_TRACKING_ID"),
+        google_drive_root_folder_id=os.getenv("GOOGLE_DRIVE_ROOT_FOLDER_ID"),
+        sheets_update_frequency=os.getenv("SHEETS_UPDATE_FREQUENCY", "real_time"),
         
         # Performance Monitoring
         enable_performance_monitoring=parse_bool(os.getenv("ENABLE_PERFORMANCE_MONITORING"), True),

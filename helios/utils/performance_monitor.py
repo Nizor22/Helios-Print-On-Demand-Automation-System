@@ -283,6 +283,21 @@ class PerformanceMonitor:
         
         # Record using the standard method
         self.record_metric(metric)
+
+    async def track_metric(self, metric_name: str, data: Dict[str, Any]):
+        """Compatibility shim for existing callers expecting an async track_metric.
+        Records a metric using record_metric_with_labels with execution_time from data
+        if available, otherwise 0.0.
+        """
+        try:
+            value = float(data.get("execution_time", data.get("processing_time_ms", 0.0)))
+            # Convert ms to seconds if the value looks like milliseconds
+            if value and value > 100:  # heuristic
+                value = value / 1000.0
+        except Exception:
+            value = 0.0
+        labels = {k: str(v) for k, v in (data or {}).items() if k not in ("execution_time", "processing_time_ms")}
+        self.record_metric_with_labels(metric_name, value, labels)
     
     def _update_operation_stats(self, metric: PerformanceMetric):
         """Update operation statistics"""

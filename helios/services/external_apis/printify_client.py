@@ -66,7 +66,11 @@ class PrintifyAPIClient:
             "get_products": f"/shops/{shop_id}/products.json",
             "get_product": f"/shops/{shop_id}/products/{{product_id}}.json",
             "update_product": f"/shops/{shop_id}/products/{{product_id}}.json",
-            "delete_product": f"/shops/{shop_id}/products/{{product_id}}.json"
+            "delete_product": f"/shops/{shop_id}/products/{{product_id}}.json",
+            # Catalog endpoints
+            "catalog_blueprints": "/catalog/blueprints.json",
+            "catalog_providers": "/catalog/blueprints/{blueprint_id}/print_providers.json",
+            "catalog_variants": "/catalog/blueprints/{blueprint_id}/print_providers/{provider_id}/variants.json"
         }
         
         # HTTP client configuration
@@ -134,8 +138,8 @@ class PrintifyAPIClient:
     
     async def upload_image(
         self, 
-        image_data: bytes,
         file_name: str,
+        image_data: bytes,
         content_type: str = "image/png"
     ) -> Dict[str, Any]:
         """Upload image to Printify
@@ -168,10 +172,20 @@ class PrintifyAPIClient:
                 image_url = None
             
             # Upload to Printify
-            upload_data = {
-                "file_name": file_name,
-                "url": image_url if image_url else "data:image/png;base64," + image_data.hex()
-            }
+            if image_url:
+                # Use Cloud Storage URL if available
+                upload_data = {
+                    "file_name": file_name,
+                    "url": image_url
+                }
+            else:
+                # Convert image data to base64 for direct upload
+                import base64
+                b64_data = base64.b64encode(image_data).decode('utf-8')
+                upload_data = {
+                    "file_name": file_name,
+                    "contents": b64_data
+                }
             
             result = await self._make_request(
                 endpoint=self.endpoints["upload_image"],
@@ -184,7 +198,7 @@ class PrintifyAPIClient:
                 logger.info(f"✅ Image uploaded to Printify: {image_info.get('id')}")
                 return {
                     "success": True,
-                    "printify_image_id": image_info.get("id"),
+                    "image_id": image_info.get("id"),
                     "printify_url": image_info.get("url"),
                     "storage_url": image_url,
                     "file_name": file_name
@@ -197,7 +211,7 @@ class PrintifyAPIClient:
             logger.error(error_msg)
             return {"success": False, "error": error_msg}
     
-    async def create_product(self, product_data: PrintifyProduct) -> Dict[str, Any]:
+    async def create_product(self, product_data: Union[PrintifyProduct, Dict[str, Any]]) -> Dict[str, Any]:
         """Create a new product on Printify
         
         Args:
@@ -207,18 +221,33 @@ class PrintifyAPIClient:
             Product creation result
         """
         try:
-            # Prepare product payload
-            payload = {
-                "title": product_data.title,
-                "description": product_data.description,
-                "blueprint_id": product_data.blueprint_id,
-                "print_provider_id": product_data.print_provider_id,
-                "variants": product_data.variants,
-                "print_areas": product_data.print_areas,
-                "tags": product_data.tags or [],
-                "is_enabled": product_data.is_enabled,
-                "is_draft": product_data.is_draft
-            }
+            # Prepare product payload - handle both PrintifyProduct objects and dictionaries
+            if hasattr(product_data, 'title'):
+                # PrintifyProduct object
+                payload = {
+                    "title": product_data.title,
+                    "description": product_data.description,
+                    "blueprint_id": product_data.blueprint_id,
+                    "print_provider_id": product_data.print_provider_id,
+                    "variants": product_data.variants,
+                    "print_areas": product_data.print_areas,
+                    "tags": product_data.tags or [],
+                    "is_enabled": product_data.is_enabled,
+                    "is_draft": product_data.is_draft
+                }
+            else:
+                # Dictionary - use directly
+                payload = product_data
+
+            # Ensure image IDs in print_areas use the correct key from upload_image
+            try:
+                for area in payload.get("print_areas", []) or []:
+                    for ph in area.get("placeholders", []) or []:
+                        for img in ph.get("images", []) or []:
+                            if "printify_image_id" in img and "id" not in img:
+                                img["id"] = img.pop("printify_image_id")
+            except Exception:
+                pass
             
             result = await self._make_request(
                 endpoint=self.endpoints["create_product"],
@@ -242,6 +271,41 @@ class PrintifyAPIClient:
             error_msg = f"Product creation failed: {e}"
             logger.error(error_msg)
             return {"success": False, "error": error_msg}
+
+    async def get_blueprints(self) -> Dict[str, Any]:
+        """Fetch available blueprints from Printify catalog"""
+        try:
+            result = await self._make_request(
+                endpoint=self.endpoints["catalog_blueprints"],
+                method="GET"
+            )
+            if result["success"]:
+                return {"success": True, "data": result["data"]}
+            return result
+        except Exception as e:
+            return {"success": False, "error": str(e)}
+
+    async def get_print_providers(self, blueprint_id: int) -> Dict[str, Any]:
+        """Fetch print providers for a given blueprint"""
+        try:
+            endpoint = self.endpoints["catalog_providers"].format(blueprint_id=blueprint_id)
+            result = await self._make_request(endpoint=endpoint, method="GET")
+            if result["success"]:
+                return {"success": True, "data": result["data"]}
+            return result
+        except Exception as e:
+            return {"success": False, "error": str(e)}
+
+    async def get_variants(self, blueprint_id: int, provider_id: int) -> Dict[str, Any]:
+        """Fetch variants for a blueprint/provider combo"""
+        try:
+            endpoint = self.endpoints["catalog_variants"].format(blueprint_id=blueprint_id, provider_id=provider_id)
+            result = await self._make_request(endpoint=endpoint, method="GET")
+            if result["success"]:
+                return {"success": True, "data": result["data"]}
+            return result
+        except Exception as e:
+            return {"success": False, "error": str(e)}
     
     async def publish_product(self, product_id: str) -> Dict[str, Any]:
         """Publish a product to connected stores
@@ -352,8 +416,8 @@ class PrintifyAPIClient:
             
             # Upload design image
             image_result = await self.upload_image(
-                image_data=design["image_data"],
-                file_name=f"{design['trend_name']}_{product['type']}.png"
+                file_name=f"{design['trend_name']}_{product['type']}.png",
+                image_data=design["image_data"]
             )
             
             if not image_result["success"]:
@@ -371,7 +435,7 @@ class PrintifyAPIClient:
                     "placeholders": [{
                         "position": "front",
                         "images": [{
-                            "id": image_result["printify_image_id"],
+                            "id": image_result.get("image_id") or image_result.get("printify_image_id"),
                             "x": 0.5,
                             "y": 0.5,
                             "scale": 1.0,
@@ -397,7 +461,7 @@ class PrintifyAPIClient:
             return {
                 "success": True,
                 "product_id": create_result["printify_product_id"],
-                "image_id": image_result["printify_image_id"],
+                "image_id": image_result.get("image_id") or image_result.get("printify_image_id"),
                 "status": "published",
                 "design": design,
                 "product": product,

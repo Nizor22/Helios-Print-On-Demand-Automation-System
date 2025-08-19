@@ -38,54 +38,37 @@ class GoogleMCPClient:
         self.client = None
         self.initialized = False
         
-        # MCP tool configurations
+        # Configure MCP tools
         self.tools = {
             "google_trends": MCPToolConfig(
-                name="GoogleTrendsTool",
+                name="google_trends",
                 endpoint="/mcp/google-trends",
-                description="Real-time Google Trends data analysis",
-                parameters={
-                    "query": "string",
-                    "geo": "string",
-                    "time_range": "string",
-                    "category": "string"
-                },
-                rate_limit=100  # requests per hour
+                description="Google Trends data analysis",
+                parameters={"query": "string", "geo": "string", "time_range": "string"}
             ),
-            "social_media_scanner": MCPToolConfig(
-                name="SocialMediaScanner",
-                endpoint="/mcp/social-trends",
-                description="Social media trend scanning and analysis",
-                parameters={
-                    "platforms": ["twitter", "reddit", "youtube"],
-                    "keywords": "list",
-                    "time_range": "string",
-                    "limit": "integer"
-                },
-                rate_limit=200
+            "social_media": MCPToolConfig(
+                name="social_media",
+                endpoint="/mcp/social-trends", 
+                description="Social media trend scanning",
+                parameters={"platforms": "list", "keywords": "list", "time_range": "string"}
             ),
-            "news_analyzer": MCPToolConfig(
-                name="NewsAnalyzer",
-                endpoint="/mcp/news-analysis",
-                description="News sentiment and relevance analysis",
-                parameters={
-                    "query": "string",
-                    "sources": "list",
-                    "time_range": "string",
-                    "sentiment_analysis": "boolean"
-                },
-                rate_limit=150
+            "news_analysis": MCPToolConfig(
+                name="news_analysis",
+                endpoint="/mcp/news",
+                description="News sentiment analysis",
+                parameters={"query": "string", "sources": "list", "time_range": "string"}
             ),
             "competitor_intel": MCPToolConfig(
-                name="CompetitorIntelligence",
-                endpoint="/mcp/competitor-intelligence",
-                description="Competitor analysis and market intelligence",
-                parameters={
-                    "competitors": "list",
-                    "analysis_type": "string",
-                    "time_range": "string"
-                },
-                rate_limit=50
+                name="competitor_intel",
+                endpoint="/mcp/competitor-intel",
+                description="Competitor intelligence gathering",
+                parameters={"competitors": "list", "analysis_type": "string", "time_range": "string"}
+            ),
+            "trend_discovery": MCPToolConfig(
+                name="trend_discovery",
+                endpoint="/mcp/discover",
+                description="Comprehensive trend discovery",
+                parameters={"keywords": "list", "geo": "string", "time_range": "string", "categories": "list"}
             )
         }
         
@@ -217,7 +200,7 @@ class GoogleMCPClient:
             Social media trend data
         """
         try:
-            tool_config = self.tools["social_media_scanner"]
+            tool_config = self.tools["social_media"]
             
             if platforms is None:
                 platforms = ["twitter", "reddit", "youtube"]
@@ -266,7 +249,7 @@ class GoogleMCPClient:
             News analysis results
         """
         try:
-            tool_config = self.tools["news_analyzer"]
+            tool_config = self.tools["news_analysis"]
             
             if sources is None:
                 sources = ["Google News", "RSS feeds", "News API"]
@@ -586,6 +569,68 @@ class GoogleMCPClient:
         if self.client:
             await self.client.aclose()
             logger.info("✅ MCP client closed")
+
+    async def test_connection(self) -> Dict[str, Any]:
+        """Test connection to MCP server and get server info"""
+        try:
+            # Try to get server info or health check
+            result = await self._make_request("/api/health", method="GET")
+            if result.get("status") == "error":
+                # Try alternative health endpoint
+                result = await self._make_request("/health", method="GET")
+            
+            return {
+                "status": "success",
+                "server_url": self.server_url,
+                "connected": True,
+                "server_info": result
+            }
+        except Exception as e:
+            return {
+                "status": "error",
+                "server_url": self.server_url,
+                "connected": False,
+                "error": str(e)
+            }
+    
+    async def get_real_trends(self, geo: str = "US", limit: int = 20) -> Dict[str, Any]:
+        """
+        Get real trending data from MCP server
+        
+        Args:
+            geo: Geographic location
+            limit: Maximum number of trends
+            
+        Returns:
+            Real trending data with metadata
+        """
+        try:
+            # Try the trend discovery endpoint first
+            data = {
+                "keywords": ["trending", "viral", "popular"],
+                "geo": geo,
+                "time_range": "now 1-d",
+                "categories": ["all"]
+            }
+            
+            result = await self._make_request("/api/discover", data=data)
+            
+            if result.get("status") == "success":
+                logger.info(f"✅ Real trends fetched from MCP server: {len(result.get('data', []))} trends")
+                return result
+            else:
+                # Fallback to trends endpoint
+                logger.info("⚠️ Discovery endpoint failed, trying trends endpoint...")
+                trends_result = await self._make_request("/api/trends", data={"geo": geo, "limit": limit})
+                return trends_result
+                
+        except Exception as e:
+            logger.error(f"❌ Failed to get real trends from MCP: {e}")
+            return {
+                "status": "error",
+                "error": str(e),
+                "timestamp": time.time()
+            }
 
 
 # Convenience functions

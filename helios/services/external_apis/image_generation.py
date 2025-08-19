@@ -61,14 +61,14 @@ class ImageGenerationService:
         
         # Default configuration
         self.default_config = {
-            "model": "imagen-3",
+            "model": "imagen-4.0-generate-001",
             "resolution": "1024x1024",
             "format": "PNG",
             "quality": "high",
             "safety_filtering": True,
             "max_concurrent_generations": 5,
             "batch_size": 3,
-            "fallback_model": "imagen-2"
+            "fallback_model": "imagen-3.0-generate-002"
         }
         
         # Update with provided config
@@ -108,7 +108,7 @@ class ImageGenerationService:
                 "safety_filter_level": request.safety_filter_level
             }
             
-            # Generate image using Vertex AI
+            # Generate image using Vertex AI with Imagen 4.0
             result = await self.vertex_ai_client.generate_image(
                 prompt=request.prompt,
                 negative_prompt=request.negative_prompt,
@@ -116,7 +116,8 @@ class ImageGenerationService:
                 height=request.height,
                 guidance_scale=request.guidance_scale,
                 num_inference_steps=request.num_inference_steps,
-                seed=request.seed
+                seed=request.seed,
+                model="imagen-4.0-generate-001"
             )
             
             if not result.get("success"):

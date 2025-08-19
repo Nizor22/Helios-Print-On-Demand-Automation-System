@@ -1,0 +1,195 @@
+{
+  "audit_timestamp": "2025-08-19T21:48:02Z",
+  "project_id": "helios-pod-system",
+  "project_name": "Helios POD System",
+  "audit_type": "api_audit",
+  "summary": {
+    "total_enabled_apis": 33,
+    "essential_apis": 15,
+    "optional_apis": 1,
+    "unused_apis": 0,
+    "expensive_apis": 0,
+    "potential_savings": 0,
+    "other_apis": 17
+  },
+  "apis": {
+    "essential": [
+      {
+        "name": "aiplatform.googleapis.com",
+        "usage": "",
+        "cost_impact": "HIGH"
+      },
+      {
+        "name": "cloudbuild.googleapis.com",
+        "usage": "",
+        "cost_impact": "LOW"
+      },
+      {
+        "name": "cloudfunctions.googleapis.com",
+        "usage": "",
+        "cost_impact": "LOW"
+      },
+      {
+        "name": "cloudresourcemanager.googleapis.com",
+        "usage": "",
+        "cost_impact": "LOW"
+      },
+      {
+        "name": "cloudscheduler.googleapis.com",
+        "usage": "",
+        "cost_impact": "LOW"
+      },
+      {
+        "name": "compute.googleapis.com",
+        "usage": "",
+        "cost_impact": "LOW"
+      },
+      {
+        "name": "firestore.googleapis.com",
+        "usage": "",
+        "cost_impact": "LOW"
+      },
+      {
+        "name": "iam.googleapis.com",
+        "usage": "",
+        "cost_impact": "LOW"
+      },
+      {
+        "name": "logging.googleapis.com",
+        "usage": "",
+        "cost_impact": "LOW"
+      },
+      {
+        "name": "monitoring.googleapis.com",
+        "usage": "",
+        "cost_impact": "LOW"
+      },
+      {
+        "name": "pubsub.googleapis.com",
+        "usage": "",
+        "cost_impact": "LOW"
+      },
+      {
+        "name": "run.googleapis.com",
+        "usage": "",
+        "cost_impact": "LOW"
+      },
+      {
+        "name": "secretmanager.googleapis.com",
+        "usage": "",
+        "cost_impact": "LOW"
+      },
+      {
+        "name": "sqladmin.googleapis.com",
+        "usage": "",
+        "cost_impact": "LOW"
+      },
+      {
+        "name": "storage.googleapis.com",
+        "usage": "",
+        "cost_impact": "LOW"
+      }
+    ],
+    "optional": [
+      {
+        "name": "cloudtasks.googleapis.com",
+        "usage": "",
+        "cost_impact": "LOW"
+      }
+    ],
+    "unused": [],
+    "expensive": [],
+    "other": [
+      {
+        "name": "artifactregistry.googleapis.com",
+        "usage": "",
+        "cost_impact": "LOW"
+      },
+      {
+        "name": "billingbudgets.googleapis.com",
+        "usage": "",
+        "cost_impact": "LOW"
+      },
+      {
+        "name": "cloudaicompanion.googleapis.com",
+        "usage": "",
+        "cost_impact": "LOW"
+      },
+      {
+        "name": "cloudtrace.googleapis.com",
+        "usage": "",
+        "cost_impact": "LOW"
+      },
+      {
+        "name": "containerregistry.googleapis.com",
+        "usage": "",
+        "cost_impact": "LOW"
+      },
+      {
+        "name": "drive.googleapis.com",
+        "usage": "",
+        "cost_impact": "LOW"
+      },
+      {
+        "name": "firebaserules.googleapis.com",
+        "usage": "",
+        "cost_impact": "LOW"
+      },
+      {
+        "name": "generativelanguage.googleapis.com",
+        "usage": "",
+        "cost_impact": "LOW"
+      },
+      {
+        "name": "iamcredentials.googleapis.com",
+        "usage": "",
+        "cost_impact": "LOW"
+      },
+      {
+        "name": "ml.googleapis.com",
+        "usage": "",
+        "cost_impact": "LOW"
+      },
+      {
+        "name": "oslogin.googleapis.com",
+        "usage": "",
+        "cost_impact": "LOW"
+      },
+      {
+        "name": "servicemanagement.googleapis.com",
+        "usage": "",
+        "cost_impact": "LOW"
+      },
+      {
+        "name": "serviceusage.googleapis.com",
+        "usage": "",
+        "cost_impact": "LOW"
+      },
+      {
+        "name": "sheets.googleapis.com",
+        "usage": "",
+        "cost_impact": "LOW"
+      },
+      {
+        "name": "source.googleapis.com",
+        "usage": "",
+        "cost_impact": "LOW"
+      },
+      {
+        "name": "storage-api.googleapis.com",
+        "usage": "",
+        "cost_impact": "LOW"
+      },
+      {
+        "name": "storage-component.googleapis.com",
+        "usage": "",
+        "cost_impact": "LOW"
+      }
+    ]
+  },
+  "recommendations": [
+    "Implement API usage monitoring and alerting",
+    "Set up automated API cleanup for unused services",
+    "Review API permissions and access controls quarterly"
+  ]
+}

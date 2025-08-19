@@ -1,30 +1,33 @@
 steps:
-  # Build CEO orchestrator service
-  - name: 'gcr.io/cloud-builders/docker'
-    args: ['build', '-f', 'deployment/docker/Dockerfile.ceo', '-t', 'gcr.io/$PROJECT_ID/helios-ceo:$COMMIT_SHA', '.']
-
-  # Build agent services
-  - name: 'gcr.io/cloud-builders/docker'
-    args: ['build', '-f', 'deployment/docker/Dockerfile.agents', '-t', 'gcr.io/$PROJECT_ID/helios-agents:$COMMIT_SHA', '.']
-
-  # Push images to Container Registry
-  - name: 'gcr.io/cloud-builders/docker'
-    args: ['push', 'gcr.io/$PROJECT_ID/helios-ceo:$COMMIT_SHA']
-
-  - name: 'gcr.io/cloud-builders/docker'
-    args: ['push', 'gcr.io/$PROJECT_ID/helios-agents:$COMMIT_SHA']
-
-  # Deploy CEO service to production
+  # Deploy Helios AI Orchestrator service to Cloud Run
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
-    args: ['gcloud', 'run', 'deploy', 'helios-ceo', '--image', 'gcr.io/$PROJECT_ID/helios-ceo:$COMMIT_SHA', '--region', 'us-central1', '--platform', 'managed', '--allow-unauthenticated', '--service-account', 'helios-automation-sa@$PROJECT_ID.iam.gserviceaccount.com']
+    args: ['gcloud', 'run', 'deploy', 'helios-orchestrator', 
+           '--source', '.',
+           '--region', 'us-central1', 
+           '--platform', 'managed', 
+           '--allow-unauthenticated', 
+           '--service-account', 'helios-automation-sa@$PROJECT_ID.iam.gserviceaccount.com',
+           '--set-env-vars', 'SERVICE_TYPE=orchestrator',
+           '--port', '8080',
+           '--memory', '1Gi',
+           '--cpu', '1',
+           '--max-instances', '10',
+           '--min-instances', '0']
 
-  # Deploy agent services to production
+  # Deploy Helios AI Agents service to Cloud Run  
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
-    args: ['gcloud', 'run', 'deploy', 'helios-agents', '--image', 'gcr.io/$PROJECT_ID/helios-agents:$COMMIT_SHA', '--region', 'us-central1', '--platform', 'managed', '--allow-unauthenticated', '--service-account', 'helios-automation-sa@$PROJECT_ID.iam.gserviceaccount.com']
-
-images:
-  - 'gcr.io/$PROJECT_ID/helios-ceo:$COMMIT_SHA'
-  - 'gcr.io/$PROJECT_ID/helios-agents:$COMMIT_SHA'
+    args: ['gcloud', 'run', 'deploy', 'helios-ai-agents',
+           '--source', '.',
+           '--region', 'us-central1',
+           '--platform', 'managed',
+           '--allow-unauthenticated',
+           '--service-account', 'helios-automation-sa@$PROJECT_ID.iam.gserviceaccount.com',
+           '--set-env-vars', 'SERVICE_TYPE=ai_agents',
+           '--port', '8080',
+           '--memory', '1Gi',
+           '--cpu', '1',
+           '--max-instances', '10',
+           '--min-instances', '0']
 
 options:
   logging: CLOUD_LOGGING_ONLY

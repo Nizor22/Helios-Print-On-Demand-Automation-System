@@ -1,3 +1,4 @@
+
 # Core Libraries
 requests>=2.31.0
 python-dotenv>=1.0.1
@@ -6,11 +7,20 @@ Pillow>=10.3.0
 tenacity>=8.2.3
 loguru>=0.7.0
 
+# Web Framework
+fastapi>=0.104.0
+uvicorn[standard]>=0.24.0
+gunicorn>=21.2.0
+httpx>=0.25.0
+
 # Google Cloud Platform Dependencies
-google-cloud-aiplatform>=1.38.0
+google-cloud-aiplatform>=1.60.0
 google-cloud-storage>=2.10.0
 google-cloud-firestore>=2.13.0
 google-cloud-secret-manager>=2.16.0
+google-cloud-language>=2.13.0
+google-cloud-translate>=3.15.0
+google-cloud-vision>=3.7.0
 google-auth>=2.23.0
 google-auth-oauthlib>=1.1.0
 google-auth-httplib2>=0.1.1
@@ -22,13 +32,20 @@ gspread>=6.1.4
 
 # AI/ML Libraries
 google-generativeai>=0.7.2
+google-ai-generativelanguage>=0.6.0
 vertexai>=1.38.0
 langchain-google-vertexai>=0.1.0
+numpy>=1.25.0
+pandas>=2.2.0
+scikit-learn>=1.4.0
+scipy>=1.11.0
 
-# MCP Integration (handled via HTTP; no PyPI deps required here)
+# Natural Language Processing
+nltk>=3.8.0
+textblob>=0.18.0
 
 # Web Scraping and APIs
-aiohttp>=3.8.5
+aiohttp>=3.9.0
 tweepy>=4.14.0
 praw>=7.7.1
 beautifulsoup4>=4.12.2
@@ -41,17 +58,18 @@ celery>=5.3.0
 redis>=4.6.0
 
 # Data Processing
-pandas>=2.1.0
-numpy>=1.25.0
-scipy>=1.11.0
 python-dateutil>=2.8.2
-
-# Web Framework
-fastapi>=0.104.0
-uvicorn[standard]>=0.24.0
-httpx>=0.25.0
-
-# External APIs
 
 # Utilities
 psutil>=5.9.0
+cachetools>=5.3.0
+ratelimit>=2.2.1
+backoff>=2.2.1
+jsonschema>=4.21.0
+marshmallow>=3.21.0
+
+# Testing
+pytest-asyncio>=0.23.0
+pytest-mock>=3.14.0
+pytest-timeout>=2.3.0
+responses>=0.25.0

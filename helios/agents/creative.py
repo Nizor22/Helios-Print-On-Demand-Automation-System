@@ -18,7 +18,15 @@ class CreativeDirector:
         self.output_dir = output_dir
         self.fonts_dir = fonts_dir
         self.config = load_config()
-        self.mcp_client = MCPClient.from_env(self.config.google_mcp_url, self.config.google_mcp_auth_token)
+        # Initialize MCP client conditionally to avoid import issues
+        try:
+            from ..services.mcp_integration.mcp_client import GoogleMCPClient
+            self.mcp_client = GoogleMCPClient(
+                server_url=self.config.google_mcp_url,
+                auth_token=self.config.google_mcp_auth_token
+            ) if self.config.google_mcp_url else None
+        except ImportError:
+            self.mcp_client = None
         # Initialize Vertex AI client for real image generation when available
         try:
             if self.config.google_cloud_project:
@@ -446,12 +454,21 @@ class CreativeDirector:
                 out_path = self.output_dir / f"{base_name}.png"
                 result = await self.vertex_ai_client.generate_image(
                     prompt=image_prompt,
-                    output_path=out_path,
-                    resolution="3000x3000",
-                    quality="high",
+                    width=3000,
+                    height=3000,
+                    model="imagen-4.0-generate-001"
                 )
-                if result.get("status") != "success" or not out_path.exists():
+                if not result.get("success"):
                     raise RuntimeError(result.get("error", "image_generation_failed"))
+                
+                # Save the generated image data to file
+                image_data = result.get("image_data")
+                if not image_data:
+                    raise RuntimeError("No image data returned from generation")
+                
+                with open(out_path, "wb") as f:
+                    f.write(image_data)
+                
                 design_path = out_path
             else:
                 raise RuntimeError("Vertex AI client not configured for image generation")

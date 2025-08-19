@@ -121,8 +121,14 @@ class TrendAnalysisAI:
         )
         
         self.google_trends = GoogleTrendsClient()
-        self.sheets_client = GoogleSheetsClient(config.gsheet_id) if config.gsheet_id else None
-        self.drive_client = GoogleDriveClient(config.google_drive_folder_id) if config.google_drive_folder_id else None
+        self.sheets_client = GoogleSheetsClient(
+            service_account_json=config.google_service_account_json,
+            spreadsheet_id=config.gsheet_id
+        ) if config.google_service_account_json and config.gsheet_id else None
+        self.drive_client = GoogleDriveClient(
+            service_account_json=config.google_service_account_json,
+            root_folder_id=config.google_drive_folder_id
+        ) if config.google_service_account_json and config.google_drive_folder_id else None
         
         # Performance monitoring
         self.performance_monitor = PerformanceMonitor(config)
@@ -162,7 +168,9 @@ class TrendAnalysisAI:
         start_time = time.time()
         
         try:
-            logger.info(f"🤖 Starting AI trend analysis for {len(keywords)} keywords in {mode.value} mode")
+            # Handle both enum and string modes
+            mode_str = mode.value if hasattr(mode, 'value') else str(mode)
+            logger.info(f"🤖 Starting AI trend analysis for {len(keywords)} keywords in {mode_str} mode")
             
             # Step 1: Gather multi-source trend data using MCP
             trend_data = await self._gather_trend_data(keywords, categories, geo, time_range)
@@ -189,15 +197,21 @@ class TrendAnalysisAI:
             
             # Log performance metrics
             processing_time = int((time.time() - start_time) * 1000)
-            await self.performance_monitor.track_metric(
-                "ai_trend_analysis",
-                {
-                    "keywords_analyzed": len(keywords),
-                    "trends_found": len(filtered_analyses),
-                    "processing_time_ms": processing_time,
-                    "mode": mode.value
-                }
-            )
+            try:
+                if hasattr(self.performance_monitor, 'track_metric'):
+                    await self.performance_monitor.track_metric(
+                        "ai_trend_analysis",
+                        {
+                            "keywords_analyzed": len(keywords),
+                            "trends_found": len(filtered_analyses),
+                            "processing_time_ms": processing_time,
+                            "mode": mode_str
+                        }
+                    )
+                else:
+                    logger.info(f"📊 Performance: {len(keywords)} keywords analyzed, {len(filtered_analyses)} trends found in {processing_time}ms")
+            except Exception as e:
+                logger.warning(f"⚠️ Performance tracking failed: {e}")
             
             logger.info(f"✅ AI trend analysis completed: {len(filtered_analyses)} high-confidence trends found in {processing_time}ms")
             

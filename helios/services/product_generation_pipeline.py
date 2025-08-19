@@ -16,7 +16,7 @@ from ..agents.creative import CreativeDirector
 from ..agents.creative import CreativeDirector as MarketingCopywriter
 from ..agents.ethics import EthicalGuardianAgent
 from ..agents.publisher_agent import PrintifyPublisherAgent
-from ..agents.trend_analysis_ai import TrendAnalysisAI, TrendAnalysisMode, ProductPrediction
+# from ..agents.trend_analysis_ai import TrendAnalysisAI, TrendAnalysisMode, ProductPrediction
 from ..services.ethical_code import EthicalCodeService
 from ..services.copyright_review import CopyrightReviewService
 from ..services.external_apis.image_generation import ImageGenerationService
@@ -114,7 +114,10 @@ class ProductGenerationPipeline:
             output_dir=config.output_dir,
             fonts_dir=config.fonts_dir
         )
-        self.marketing_copywriter = MarketingCopywriter()
+        self.marketing_copywriter = MarketingCopywriter(
+            output_dir=config.output_dir,
+            fonts_dir=config.fonts_dir
+        )
         self.ethical_guardian = EthicalGuardianAgent()
         self.publisher_agent = PrintifyPublisherAgent(
             api_token=config.printify_api_token,
@@ -131,7 +134,12 @@ class ProductGenerationPipeline:
         self.performance_monitor = PerformanceMonitor(config)
         
         # Initialize AI agent for enhanced product generation
-        self.trend_ai = TrendAnalysisAI(config)
+        try:
+            from ..agents.trend_analysis_ai import TrendAnalysisAI
+            self.trend_ai = TrendAnalysisAI(config)
+        except ImportError as e:
+            logger.warning(f"⚠️ TrendAnalysisAI not available: {e}")
+            self.trend_ai = None
         
         # Pipeline configuration
         self.max_designs_per_trend = 5
@@ -343,28 +351,43 @@ class ProductGenerationPipeline:
                 
                 # Generate multiple image variants
                 for j in range(self.max_images_per_design):
-                    image_result = await self.image_generation.generate_design_image(
+                    # Create image generation request
+                    from ..services.external_apis.image_generation import ImageGenerationRequest
+                    image_request = ImageGenerationRequest(
                         prompt=design.design_prompt,
-                        style_preferences=design.style_preferences,
-                        color_scheme=design.color_scheme,
-                        model=self.config.imagen_model,
-                        resolution=self.config.image_resolution,
-                        quality=self.config.image_quality
+                        negative_prompt="text overlay, watermarks, logos, copyrighted material",
+                        width=1024,
+                        height=1024,
+                        style_preset=design.style_preferences.get("style", "modern")
                     )
                     
-                    if image_result and image_result.get("status") == "success":
-                        image_data = image_result.get("image_data", {})
-                        
-                        image = GeneratedImage(
-                            image_id=f"image_{int(time.time())}_{len(images)}",
-                            design_id=design.design_id,
-                            image_url=image_data.get("image_url", ""),
-                            image_path=image_data.get("local_path"),
-                            image_metadata=image_data.get("metadata", {}),
-                            generation_prompt=design.design_prompt,
-                            model_used=self.config.imagen_model,
-                            quality_score=image_data.get("quality_score", 0.0)
-                        )
+                    image_result = await self.image_generation.generate_image(image_request)
+                    
+                    if image_result and image_result.get("success"):
+                        generated_image = image_result.get("generated_image")
+                        if generated_image:
+                            # Save image to local file
+                            image_filename = f"design_{design.design_id}_image_{j+1}.png"
+                            image_path = Path(f"generated_images/{image_filename}")
+                            image_path.parent.mkdir(parents=True, exist_ok=True)
+                            
+                            with open(image_path, "wb") as f:
+                                f.write(generated_image.image_data)
+                            
+                            image = GeneratedImage(
+                                image_id=f"image_{int(time.time())}_{len(images)}",
+                                design_id=design.design_id,
+                                image_url="",  # Will be uploaded to storage later
+                                image_path=str(image_path),
+                                image_metadata={
+                                    "model_used": image_result.get("model_used"),
+                                    "generation_time_ms": image_result.get("generation_time_ms"),
+                                    "prompt": design.design_prompt
+                                },
+                                generation_prompt=design.design_prompt,
+                                model_used=image_result.get("model_used", "imagen-4.0-generate-001"),
+                                quality_score=0.9  # High quality for Imagen 4.0
+                            )
                         
                         images.append(image)
                         logger.info(f"🖼️ Generated image {j+1} for design {design.design_id}")
@@ -443,7 +466,7 @@ class ProductGenerationPipeline:
         self,
         product_packages: List[ProductPackage],
         trend_opportunity: Dict[str, Any]
-    ) -> List[Optional[ProductPrediction]]:
+    ) -> List[Optional[Any]]:
         """Predict product success using AI"""
         predictions = []
         

@@ -1,0 +1,57 @@
+{
+  "audit_timestamp": "2025-08-19T21:49:16Z",
+  "project_id": "helios-pod-system",
+  "project_name": "Helios POD System",
+  "audit_type": "cost_analysis",
+  "summary": {
+    "total_budgets": 0,
+    "total_monthly_cost": 0,
+    "total_estimated_monthly_cost": 30.00,
+    "services_with_costs": 0,
+    "cost_optimization_opportunities": 0,
+    "potential_monthly_savings": 0
+  },
+  "billing": {
+    "account": {
+      "name": "billingAccounts/01D4DD-8F58D8-DBDEB0",
+      "display_name": "My",
+      "open": false,
+      "account_id": "Account"
+    },
+    "budgets": [
+      {
+        "name": "billingAccounts/01D4DD-8F58D8-DBDEB0/budgets/b383662e-4c50-4425-a34d-feb84357f43e",
+        "display_name": "$20 Monthly Budget Alert",
+        "currency": "USD",
+        "amount": 0,
+        "threshold": 0.5
+      }
+    ]
+  },
+  "resource_costs": {
+    "services": [],
+    "estimated_services": [
+      {
+        "name": "Cloud Storage",
+        "estimated_cost": 10.00,
+        "resource_count": 2
+      },
+      {
+        "name": "Firestore",
+        "estimated_cost": 20.00,
+        "resource_count": 2
+      }
+    ]
+  },
+  "cost_optimization": {
+    "opportunities": []
+  },
+  "recommendations": [
+    "No budgets configured - set up budget alerts to prevent cost overruns",
+    "Enable billing export to BigQuery for detailed cost analysis",
+    "Implement resource tagging for better cost allocation",
+    "Set up automated resource cleanup policies",
+    "Review and optimize machine types and storage classes",
+    "Consider using committed use discounts for predictable workloads"
+  ]
+}

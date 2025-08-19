@@ -283,28 +283,52 @@ class VertexAIClient:
     async def generate_image(
         self,
         prompt: str,
-        output_path: Path = None,
-        resolution: str = "1024x1024",
-        quality: str = "high"
+        negative_prompt: str = "",
+        width: int = 1024,
+        height: int = 1024,
+        guidance_scale: float = 7.5,
+        num_inference_steps: int = 50,
+        seed: Optional[int] = None,
+        model: str = None
     ) -> Dict[str, Any]:
         """
-        Generate image using Vertex AI Imagen (if available). Saves PNG to output_path.
+        Generate image using Vertex AI Imagen 4.0. Returns image data and metadata.
         """
         try:
             logger.info(f"🖼️ Image generation requested: {prompt}")
-            width, height = (int(x) for x in resolution.lower().split("x"))
+            
             if ImageGenerationModel is None:
                 raise RuntimeError("Imagen model not available in this environment")
 
-            model = ImageGenerationModel.from_pretrained(self.image_model)
+            # Use specified model or default
+            model_name = model or self.image_model
+            logger.info(f"Using model: {model_name}")
+            
+            imagen_model = ImageGenerationModel.from_pretrained(model_name)
+            
+            # Determine aspect ratio from width/height
+            aspect_ratio = "1:1"  # Default
+            if width == height:
+                aspect_ratio = "1:1"
+            elif width > height:
+                if width / height == 4/3:
+                    aspect_ratio = "4:3"
+                elif width / height == 16/9:
+                    aspect_ratio = "16:9"
+            elif height > width:
+                if height / width == 4/3:
+                    aspect_ratio = "3:4"
+                elif height / width == 16/9:
+                    aspect_ratio = "9:16"
+            
             raw = await asyncio.to_thread(
-                model.generate_images,
+                imagen_model.generate_images,
                 prompt=prompt,
                 number_of_images=1,
-                # Imagen 3 preview uses aspect_ratio instead of explicit size
-                aspect_ratio="1:1",
+                aspect_ratio=aspect_ratio,
                 safety_filter_level="block_moderate_and_above",
             )
+            
             # Normalize output across SDK variants
             images = []
             if isinstance(raw, list):
@@ -316,6 +340,7 @@ class VertexAIClient:
 
             if not images:
                 raise RuntimeError("No image returned from Imagen (empty result)")
+            
             img = images[0]
             img_bytes = None
             for attr in ("_image_bytes", "image_bytes", "bytes"):
@@ -330,20 +355,21 @@ class VertexAIClient:
                     pass
             if img_bytes is None:
                 raise RuntimeError("Imagen returned no bytes for image")
-            out_path = Path(output_path) if output_path else Path.cwd() / "output" / f"imagen_{int(time.time())}.png"
-            out_path.parent.mkdir(parents=True, exist_ok=True)
-            with open(out_path, "wb") as f:
-                f.write(img_bytes)
+            
             return {
-                "status": "success",
-                "output_path": str(out_path),
-                "resolution": resolution,
-                "quality": quality,
-                "image_model": self.image_model,
+                "success": True,
+                "image_data": img_bytes,
+                "model_used": model_name,
+                "width": width,
+                "height": height,
+                "prompt": prompt,
+                "negative_prompt": negative_prompt,
+                "aspect_ratio": aspect_ratio,
+                "safety_score": 1.0  # Default safety score
             }
         except Exception as e:
             logger.error(f"❌ Image generation failed: {e}")
-            return {"status": "error", "error": str(e)}
+            return {"success": False, "error": str(e)}
     
     async def batch_generate_text(
         self,

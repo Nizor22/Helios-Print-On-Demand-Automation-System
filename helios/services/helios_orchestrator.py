@@ -13,7 +13,6 @@ from pathlib import Path
 from loguru import logger
 
 from ..agents.ceo import HeliosCEO
-from ..agents.trend_analysis_ai import TrendAnalysisAI, TrendAnalysisMode
 from ..config import HeliosConfig
 from ..utils.performance_monitor import PerformanceMonitor
 from .automated_trend_discovery import AutomatedTrendDiscovery, create_automated_trend_discovery
@@ -82,12 +81,19 @@ class HeliosOrchestrator:
             # Initialize AI agents first
             if self.use_ai_orchestration:
                 logger.info("🤖 Initializing AI agents...")
-                self.trend_ai = TrendAnalysisAI(self.config)
+                try:
+                    from ..agents.trend_analysis_ai import TrendAnalysisAI
+                    self.trend_ai = TrendAnalysisAI(self.config)
+                    logger.info("✅ TrendAnalysisAI initialized")
+                except ImportError as e:
+                    logger.warning(f"⚠️ TrendAnalysisAI not available: {e}")
+                    self.trend_ai = None
+                
                 self.ceo_agent = HeliosCEO(
                     min_opportunity=self.config.min_opportunity_score,
                     min_confidence=self.config.min_audience_confidence
                 )
-                logger.info("✅ AI agents initialized")
+                logger.info("✅ CEO agent initialized")
             
             # Initialize core services
             self.trend_discovery = await create_automated_trend_discovery(self.config)
@@ -191,9 +197,13 @@ class HeliosOrchestrator:
             
             # Get seed keywords using AI if enabled
             if self.use_ai_orchestration and self.trend_ai:
-                # Use AI to generate smart seed keywords based on market analysis
-                ai_keywords = await self._get_ai_generated_keywords()
-                seed_keywords = ai_keywords
+                try:
+                    # Use AI to generate smart seed keywords based on market analysis
+                    ai_keywords = await self._get_ai_generated_keywords()
+                    seed_keywords = ai_keywords
+                except Exception as e:
+                    logger.warning(f"⚠️ AI keyword generation failed: {e}")
+                    seed_keywords = await self._get_seed_keywords()
             else:
                 # Use default seed keywords
                 seed_keywords = await self._get_seed_keywords()
@@ -415,48 +425,88 @@ class HeliosOrchestrator:
         except Exception as e:
             logger.error(f"❌ Continuous operation failed: {e}")
     
-    async def _get_seed_keywords(self) -> List[str]:
-        """Get seed keywords for trend discovery"""
-        # This could be enhanced with historical data, seasonal trends, etc.
-        return [
-            "sustainable fashion", "eco-friendly products", "minimalist design",
-            "tech accessories", "home decor trends", "wellness products",
-            "pet accessories", "garden tools", "kitchen gadgets", "fitness gear"
-        ]
-    
     async def _get_ai_generated_keywords(self) -> List[str]:
-        """Generate intelligent seed keywords using AI based on market analysis"""
+        """Get AI-generated keywords using Gemini/Vertex AI"""
         try:
-            logger.info("🤖 Generating AI-powered seed keywords...")
+            logger.info("🧠 Getting AI-generated keywords...")
             
-            # Get current market trends
-            market_trends = await self.trend_ai.analyze_trends(
-                keywords=["market trends", "consumer behavior", "emerging markets"],
-                mode=TrendAnalysisMode.DISCOVERY,
-                categories=["general"],
-                geo="US",
-                time_range="now 1-d"
+            # Use the AI trend discovery service
+            from .ai_trend_discovery import AITrendDiscoveryService, TrendDiscoveryRequest
+            
+            ai_service = AITrendDiscoveryService(self.config)
+            
+            # Create trend discovery request
+            request = TrendDiscoveryRequest(
+                categories=["technology", "lifestyle", "health", "business", "entertainment"],
+                geo_locations=["US", "GB", "CA"],
+                time_range="now 1-m",
+                market_focus="print-on-demand products",
+                product_type="custom apparel and accessories",
+                max_trends=15
             )
             
-            # Extract keywords from AI analysis
-            ai_keywords = []
-            for trend in market_trends[:5]:  # Top 5 trends
-                ai_keywords.append(trend.trend_name)
-                ai_keywords.extend(trend.marketing_angles[:2])  # Add marketing angles as keywords
+            # Get AI-powered trend recommendations
+            recommendations = await ai_service.get_trend_recommendations(request)
             
-            # Add some default keywords as fallback
-            default_keywords = ["trending", "viral", "popular", "hot", "new"]
-            ai_keywords.extend(default_keywords)
+            if recommendations.get("success") and recommendations.get("top_trends"):
+                # Extract keywords from top trends
+                keywords = [trend.keyword for trend in recommendations["top_trends"][:10]]
+                logger.info(f"✅ AI generated {len(keywords)} high-potential keywords")
+                return keywords
+            else:
+                logger.warning("⚠️ AI trend discovery failed, using fallback")
+                return self._get_seed_keywords()
+                
+        except Exception as e:
+            logger.error(f"❌ AI keyword generation failed: {e}")
+            return self._get_seed_keywords()
+
+    def _get_seed_keywords(self) -> List[str]:
+        """Get seed keywords for trend discovery"""
+        try:
+            # Try to get live trends first
+            logger.info("🔍 Fetching live trends for seed keywords...")
             
-            # Remove duplicates and limit
-            unique_keywords = list(set(ai_keywords))[:20]
+            # Use the working trend system
+            from helios.trends.google_trends import fetch_trends
             
-            logger.info(f"✅ Generated {len(unique_keywords)} AI-powered keywords")
-            return unique_keywords
+            # Try multiple geographic regions for diverse trends
+            regions = ["US", "GB", "CA", "AU"]
+            all_trends = []
+            
+            for region in regions:
+                try:
+                    region_trends = fetch_trends(geo=region, top_n=8)
+                    if region_trends:
+                        all_trends.extend(region_trends)
+                        logger.info(f"✅ Fetched {len(region_trends)} trends from {region}")
+                    else:
+                        logger.warning(f"⚠️ No trends found for {region}")
+                except Exception as e:
+                    logger.warning(f"⚠️ Failed to fetch trends for {region}: {e}")
+                    continue
+            
+            # Remove duplicates while preserving order
+            seen = set()
+            unique_trends = []
+            for trend in all_trends:
+                if trend.lower() not in seen:
+                    seen.add(trend.lower())
+                    unique_trends.append(trend)
+            
+            if unique_trends:
+                logger.info(f"✅ Total unique trends: {len(unique_trends)}")
+                return unique_trends[:15]  # Return top 15 unique trends
+            
+            # Fallback to AI-generated keywords if no trends found
+            logger.info("⚠️ No live trends found, falling back to AI-generated keywords...")
+            return self._get_ai_generated_keywords()
             
         except Exception as e:
-            logger.warning(f"⚠️ AI keyword generation failed, using defaults: {e}")
-            return ["trending", "viral", "popular", "hot", "new"]
+            logger.error(f"❌ Failed to get seed keywords: {e}")
+            # Final fallback to minimal generic terms
+            logger.warning("⚠️ Using minimal generic fallback keywords")
+            return ["trending", "viral", "popular", "hot", "new", "latest", "current", "modern"]
     
     async def _get_ai_insights_for_opportunities(self, opportunities: List[Any]) -> Dict[str, Any]:
         """Get AI insights for validated opportunities"""
