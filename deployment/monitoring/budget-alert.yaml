@@ -1,0 +1,35 @@
+# Budget Alert Configuration for Helios Project
+# To create budget alerts, run these commands:
+
+# 1. Create Budget
+# gcloud billing budgets create \
+#   --billing-account=01D4DD-8F58D8-DBDEB0 \
+#   --display-name="Helios Project Budget" \
+#   --budget-amount=100 \
+#   --budget-amount-specified-amount=100 \
+#   --budget-amount-specified-currency-code=USD
+
+# 2. Create Budget Alert (50% threshold)
+# gcloud billing budgets create \
+#   --billing-account=01D4DD-8F58D8-DBDEB0 \
+#   --display-name="Helios 50% Budget Alert" \
+#   --budget-amount=100 \
+#   --budget-amount-specified-amount=100 \
+#   --budget-amount-specified-currency-code=USD \
+#   --threshold-rules=threshold=0.5,spend-basis=current-spend
+
+# 3. Create Budget Alert (90% threshold)
+# gcloud billing budgets create \
+#   --billing-account=01D4DD-8F58D8-DBDEB0 \
+#   --display-name="Helios 90% Budget Alert" \
+#   --budget-amount=100 \
+#   --budget-amount-specified-amount=100 \
+#   --budget-amount-specified-currency-code=USD \
+#   --threshold-rules=threshold=0.9,spend-basis=current-spend
+
+# Note: Replace [CHANNEL_ID] with actual notification channel ID
+# Create notification channel first:
+# gcloud alpha monitoring channels create \
+#   --display-name="Helios Alerts" \
+#   --type=email \
+#   --channel-labels=email_address=your-email@example.com

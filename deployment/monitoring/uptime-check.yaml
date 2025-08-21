@@ -1,0 +1,20 @@
+# Uptime Check Configuration for Helios Services
+# To create uptime checks, run these commands:
+
+# 1. Create Uptime Check for Orchestrator Service
+# gcloud monitoring uptime-checks create http helios-orchestrator-health \
+#   --display-name="Helios Orchestrator Health Check" \
+#   --uri="https://helios-orchestrator-sqasgom3iq-uc.a.run.app/health" \
+#   --check-interval=30s \
+#   --timeout=10s
+
+# 2. Create Uptime Check for AI Agents Service  
+# gcloud monitoring uptime-checks create http helios-ai-agents-health \
+#   --display-name="Helios AI Agents Health Check" \
+#   --uri="https://helios-ai-agents-sqasgom3iq-uc.a.run.app/health" \
+#   --check-interval=30s \
+#   --timeout=10s
+
+# 3. Create Alert Policy for Service Down
+# gcloud alpha monitoring policies create \
+#   --policy-from-file=alert-policy.yaml

@@ -1,0 +1,17 @@
+# Cloud Build Trigger Configuration for Helios
+# This file can be used to create automated CI/CD triggers
+
+# To create the trigger, run:
+# gcloud builds triggers create github \
+#   --repo-name=Helios-Print-On-Demand-Automation-System \
+#   --repo-owner=Nizor22 \
+#   --branch-pattern="^main$" \
+#   --build-config=deployment/cloud_run/cloudbuild.yaml \
+#   --name=helios-auto-deploy \
+#   --description="Automated deployment trigger for Helios main branch"
+
+# Trigger Configuration:
+# - Repository: Nizor22/Helios-Print-On-Demand-Automation-System
+# - Branch: main
+# - Build Config: deployment/cloud_run/cloudbuild.yaml
+# - Auto-deploy on every push to main branch

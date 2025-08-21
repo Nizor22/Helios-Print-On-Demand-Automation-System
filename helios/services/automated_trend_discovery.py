@@ -82,7 +82,7 @@ class AutomatedTrendDiscovery:
         self.social_scanner = SocialTrendsScanner()
         self.news_analyzer = NewsSentimentAnalyzer()
         self.competitor_intel = CompetitorIntelligenceService(
-            project_id=config.google_cloud_project or "helios-pod-system",
+            project_id=config.google_cloud_project,
             location=config.google_cloud_region or "us-central1"
         )
         self.performance_monitor = PerformanceMonitor(config)

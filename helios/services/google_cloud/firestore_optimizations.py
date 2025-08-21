@@ -522,7 +522,7 @@ class OptimizedFirestoreClient:
             "indexes": recommended_indexes,
             "next_steps": [
                 "Use Firebase CLI: firebase firestore:indexes",
-                "Or Firebase Console: https://console.firebase.google.com/project/helios-pod-system/firestore/indexes",
+                "Or Firebase Console: https://console.firebase.google.com/project/{project_id}/firestore/indexes",
                 "Deploy indexes with: firebase deploy --only firestore:indexes"
             ]
         }

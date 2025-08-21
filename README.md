@@ -53,7 +53,7 @@ I have successfully transformed the Helios Autonomous Store from a robust manual
 **Solution**: Use Docker Buildx for multi-platform builds
 ```bash
 # ❌ WRONG - Creates ARM64 images on Mac
-docker build -f deployment/docker/Dockerfile.ceo -t gcr.io/helios-pod-system/helios-ceo:latest .
+# Docker deployment removed - using source-based Cloud Run deployment
 
 # ✅ CORRECT - Builds for x86_64 architecture
 docker buildx build --platform linux/amd64 -f deployment/docker/Dockerfile.ceo -t gcr.io/helios-pod-system/helios-ceo:latest --load .
@@ -99,7 +99,7 @@ gcloud run deploy helios-ceo \
 
 ### **Method 2: Cloud Build (Alternative)**
 ```bash
-gcloud builds submit --config deployment/cloud_run/cloudbuild.yaml --project=helios-pod-system
+gcloud builds submit --config deployment/cloud_run/cloudbuild.yaml
 ```
 
 ## 🎯 **PRINTIFY API COMPLETE SOLUTION**

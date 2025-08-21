@@ -1,0 +1,20 @@
+displayName: "Helios Service Down Alert"
+documentation:
+  content: "Alert when Helios services are down"
+  mimeType: "text/markdown"
+conditions:
+  - displayName: "Uptime check failure"
+    conditionThreshold:
+      filter: 'resource.type="uptime_url" AND metric.type="monitoring.googleapis.com/uptime_check/check_passed"'
+      comparison: COMPARISON_LESS_THAN
+      thresholdValue: 1
+      duration: 300s
+      trigger:
+        count: 1
+alertStrategy:
+  autoClose: 3600s
+notificationChannels:
+  - projects/helios-ai-automation/notificationChannels/[CHANNEL_ID]
+combiner: OR
+enabled:
+  value: true
