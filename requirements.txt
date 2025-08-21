@@ -82,8 +82,9 @@ typing_extensions==4.14.1
 tzdata==2025.2
 uritemplate==4.2.0
 urllib3==2.5.0
-uvicorn==0.35.0
 uvloop==0.21.0
 watchfiles==1.1.0
 websockets==15.0.1
 yarl==1.20.1
+gunicorn==22.0.0
+uvicorn[standard]==0.32.1
