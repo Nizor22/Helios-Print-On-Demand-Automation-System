@@ -29,7 +29,8 @@ steps:
            '--memory', '1Gi',
            '--cpu', '1',
            '--max-instances', '10',
-           '--min-instances', '0']
+           '--min-instances', '0',
+           '--entrypoint', 'gunicorn --bind :$PORT --workers 4 --worker-class uvicorn.workers.UvicornWorker helios.server_ai_agents:app']
 
 options:
   logging: CLOUD_LOGGING_ONLY
