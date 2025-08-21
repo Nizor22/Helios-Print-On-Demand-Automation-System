@@ -26,9 +26,10 @@
 - [ ] Test automated deployment pipeline
 
 ### 5. Monitoring & Alerting
-- [ ] Set up uptime checks for both services
-- [ ] Create alert policies for service failures
-- [ ] Set up budget alerts (50%, 90%, 100%)
+- [x] Set up uptime checks for both services
+- [x] Create alert policies for service failures
+- [x] Set up budget alerts (50%, 90%, 100%)
+- [x] Monthly budget: $10/month
 - [ ] Configure notification channels
 
 ### 6. Security & Compliance

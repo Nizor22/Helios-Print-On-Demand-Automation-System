@@ -4,17 +4,17 @@
 # 1. Create Budget
 # gcloud billing budgets create \
 #   --billing-account=01D4DD-8F58D8-DBDEB0 \
-#   --display-name="Helios Project Budget" \
-#   --budget-amount=100 \
-#   --budget-amount-specified-amount=100 \
+#   --display-name="Helios Project Budget - $10/month" \
+#   --budget-amount=10 \
+#   --budget-amount-specified-amount=10 \
 #   --budget-amount-specified-currency-code=USD
 
 # 2. Create Budget Alert (50% threshold)
 # gcloud billing budgets create \
 #   --billing-account=01D4DD-8F58D8-DBDEB0 \
 #   --display-name="Helios 50% Budget Alert" \
-#   --budget-amount=100 \
-#   --budget-amount-specified-amount=100 \
+#   --budget-amount=10 \
+#   --budget-amount-specified-amount=10 \
 #   --budget-amount-specified-currency-code=USD \
 #   --threshold-rules=threshold=0.5,spend-basis=current-spend
 
@@ -22,8 +22,8 @@
 # gcloud billing budgets create \
 #   --billing-account=01D4DD-8F58D8-DBDEB0 \
 #   --display-name="Helios 90% Budget Alert" \
-#   --budget-amount=100 \
-#   --budget-amount-specified-amount=100 \
+#   --budget-amount=10 \
+#   --budget-amount-specified-amount=10 \
 #   --budget-amount-specified-currency-code=USD \
 #   --threshold-rules=threshold=0.9,spend-basis=current-spend
 
