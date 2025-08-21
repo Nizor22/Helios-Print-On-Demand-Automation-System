@@ -21,8 +21,9 @@
 ## 🔧 Next Steps for Production
 
 ### 4. CI/CD Automation
-- [ ] Connect GitHub repository to Cloud Build
-- [ ] Create automated deployment trigger
+- [x] Connect GitHub repository to Cloud Build
+- [x] Create automated deployment trigger: `deploy-helios-production`
+- [x] Service account configured: `helios-cicd-deployer@helios-ai-automation.iam.gserviceaccount.com`
 - [ ] Test automated deployment pipeline
 
 ### 5. Monitoring & Alerting
