@@ -218,3 +218,4 @@ This project follows strict quality standards. Before contributing:
 # Final staging deployment test with all APIs enabled.
 # Testing deployment with proper service account permissions.
 # Testing automated CI/CD pipeline with fixed cloudbuild.yaml configuration.
+# Testing with Cloud Build service account permissions fixed.
