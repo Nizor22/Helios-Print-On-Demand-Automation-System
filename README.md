@@ -216,3 +216,4 @@ This project follows strict quality standards. Before contributing:
 # Test deployment to staging environment.
 # Staging deployment test with secrets configured.
 # Final staging deployment test with all APIs enabled.
+# Testing deployment with proper service account permissions.
