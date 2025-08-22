@@ -221,3 +221,4 @@ This project follows strict quality standards. Before contributing:
 # Testing with Cloud Build service account permissions fixed.
 # Testing CI/CD pipeline with logging permissions resolved.
 # Testing complete CI/CD pipeline with all IAM permissions granted.
+# Testing CI/CD pipeline with default Cloud Build service account permissions fixed.
