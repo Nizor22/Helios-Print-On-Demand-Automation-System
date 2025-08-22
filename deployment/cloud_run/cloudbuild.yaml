@@ -1,8 +1,9 @@
 steps:
   # Deploy Helios AI Orchestrator service to Cloud Run
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    dir: 'deployment/run/orchestrator'
     args: ['gcloud', 'run', 'deploy', 'helios-orchestrator', 
-           '--source', 'deployment/run/orchestrator',
+           '--source', '.',
            '--region', 'us-central1', 
            '--platform', 'managed', 
            '--allow-unauthenticated', 
@@ -17,8 +18,9 @@ steps:
 
   # Deploy Helios AI Agents service to Cloud Run  
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    dir: 'deployment/run/agents'
     args: ['gcloud', 'run', 'deploy', 'helios-ai-agents',
-           '--source', 'deployment/run/agents',
+           '--source', '.',
            '--region', 'us-central1',
            '--platform', 'managed',
            '--allow-unauthenticated',
