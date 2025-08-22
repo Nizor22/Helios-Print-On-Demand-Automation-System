@@ -44,6 +44,7 @@ httpx==0.28.1
 idna==3.10
 iniconfig==2.1.0
 loguru==0.7.3
+google-cloud-error-reporting==1.8.0
 lxml==6.0.0
 multidict==6.6.4
 numpy==2.3.2

@@ -1,0 +1,15 @@
+createTime: '2025-08-21T01:45:05.440973752Z'
+description: Automatically deploys the Helios system to production on Cloud Run
+filename: deployment/cloud_run/cloudbuild.yaml
+github:
+  name: Helios-Print-On-Demand-Automation-System
+  owner: Nizor22
+  push:
+    branch: ^main$
+id: b56aaad6-7584-4598-ab74-c4cf739b63d4
+includeBuildLogs: INCLUDE_BUILD_LOGS_WITH_STATUS
+name: deploy-helios-production
+resourceName: projects/helios-ai-automation/locations/global/triggers/b56aaad6-7584-4598-ab74-c4cf739b63d4
+serviceAccount: projects/helios-ai-automation/serviceAccounts/helios-cicd-deployer@helios-ai-automation.iam.gserviceaccount.com
+tags:
+- production

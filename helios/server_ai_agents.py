@@ -4,17 +4,31 @@ Helios AI Agents Service - Specialized AI agents for Print-On-Demand automation
 Implements: Trend Analyst, Market Researcher, Creative Director, Content Writer
 """
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 import uvicorn
 import os
 import logging
 from typing import Dict, Any, List
 from pydantic import BaseModel, Field
+import time
+import traceback
 
-# Configure logging
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+# Google Cloud Error Reporting
+try:
+    from google.cloud import error_reporting
+    error_client = error_reporting.Client()
+    ERROR_REPORTING_AVAILABLE = True
+except ImportError:
+    error_client = None
+    ERROR_REPORTING_AVAILABLE = False
+
+# Import and configure centralized logging
+from .logging_config import get_logger
+
+# Get logger instance for this service
+logger = get_logger("helios-ai-agents")
 
 # Create FastAPI app
 app = FastAPI(
@@ -31,6 +45,105 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Global exception handler for unhandled errors
+@app.exception_handler(Exception)
+async def global_exception_handler(request: Request, exc: Exception):
+    """Global exception handler that reports errors to Google Cloud Error Reporting"""
+    error_context = {
+        "service": "helios-ai-agents",
+        "endpoint": str(request.url),
+        "method": request.method,
+        "client_ip": request.client.host if request.client else None,
+        "user_agent": request.headers.get("user-agent"),
+        "trace_id": request.headers.get("x-request-id"),
+    }
+    
+    # Log the error with structured context
+    logger.error(
+        f"Unhandled exception in {request.url.path}: {str(exc)}",
+        error_code=type(exc).__name__,
+        error_details=str(exc),
+        context=error_context,
+        exception=exc
+    )
+    
+    # Report to Google Cloud Error Reporting if available
+    if ERROR_REPORTING_AVAILABLE and error_client:
+        try:
+            error_client.report_exception(
+                exc,
+                user=error_context.get("client_ip"),
+                context={
+                    "endpoint": error_context["endpoint"],
+                    "method": error_context["method"],
+                    "service": error_context["service"],
+                    "trace_id": error_context["trace_id"]
+                }
+            )
+        except Exception as report_error:
+            logger.warning(f"Failed to report error to Google Cloud Error Reporting: {report_error}")
+    
+    # Return structured error response
+    return JSONResponse(
+        status_code=500,
+        content={
+            "error": "Internal server error",
+            "error_code": type(exc).__name__,
+            "service": "helios-ai-agents",
+            "timestamp": time.time(),
+            "trace_id": error_context["trace_id"]
+        }
+    )
+
+# HTTP exception handler for structured error responses
+@app.exception_handler(HTTPException)
+async def http_exception_handler(request: Request, exc: HTTPException):
+    """Handle HTTP exceptions with structured logging and error reporting"""
+    error_context = {
+        "service": "helios-ai-agents",
+        "endpoint": str(request.url),
+        "method": request.method,
+        "status_code": exc.status_code,
+        "client_ip": request.client.host if request.client else None,
+        "user_agent": request.headers.get("user-agent"),
+        "trace_id": request.headers.get("x-request-id"),
+    }
+    
+    # Log the HTTP error
+    logger.warning(
+        f"HTTP {exc.status_code} error in {request.url.path}: {exc.detail}",
+        error_details=exc.detail,
+        context=error_context
+    )
+    
+    # Report to Google Cloud Error Reporting for 5xx errors
+    if ERROR_REPORTING_AVAILABLE and error_client and exc.status_code >= 500:
+        try:
+            error_client.report_exception(
+                exc,
+                user=error_context.get("client_ip"),
+                context={
+                    "endpoint": error_context["endpoint"],
+                    "method": error_context["method"],
+                    "service": error_context["service"],
+                    "status_code": exc.status_code,
+                    "trace_id": error_context["trace_id"]
+                }
+            )
+        except Exception as report_error:
+            logger.warning(f"Failed to report error to Google Cloud Error Reporting: {report_error}")
+    
+    return JSONResponse(
+        status_code=exc.status_code,
+        content={
+            "error": exc.detail,
+            "error_code": f"HTTP_{exc.status_code}",
+            "service": "helios-ai-agents",
+            "timestamp": time.time(),
+            "trace_id": error_context["trace_id"]
+        }
+    )
 
 # Pydantic models for structured AI agent outputs
 class TrendAnalysisInput(BaseModel):

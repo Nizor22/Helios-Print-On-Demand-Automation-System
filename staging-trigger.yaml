@@ -1,0 +1,12 @@
+description: Automatically deploys the Helios system to staging on Cloud Run
+filename: deployment/cloud_run/cloudbuild.yaml
+github:
+  name: Helios-Print-On-Demand-Automation-System
+  owner: Nizor22
+  push:
+    branch: ^develop$
+name: deploy-helios-staging
+includeBuildLogs: INCLUDE_BUILD_LOGS_WITH_STATUS
+serviceAccount: projects/helios-ai-staging/serviceAccounts/helios-cicd-deployer@helios-ai-staging.iam.gserviceaccount.com
+tags:
+- staging
