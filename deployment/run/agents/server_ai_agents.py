@@ -25,7 +25,7 @@ except ImportError:
     ERROR_REPORTING_AVAILABLE = False
 
 # Import and configure centralized logging
-from .logging_config import get_logger
+from helios.logging_config import get_logger
 
 # Get logger instance for this service
 logger = get_logger("helios-ai-agents")
