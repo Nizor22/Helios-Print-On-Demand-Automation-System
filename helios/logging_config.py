@@ -51,11 +51,10 @@ try:
         
         return json.dumps(log_entry, ensure_ascii=False)
     
-    # Add structured JSON handler for Cloud Logging with proper serialization
+    # Add structured JSON handler for stdout with proper serialization
     logger.add(
         sys.stdout,
         format=json_formatter,
-        serialize=True,  # Enable built-in JSON serialization for Cloud Logging
         level="INFO",
         backtrace=True,
         diagnose=True,
@@ -63,11 +62,10 @@ try:
         catch=True
     )
     
-    # Add error handler for uncaught exceptions with JSON serialization
+    # Add error handler for stderr with JSON serialization
     logger.add(
         sys.stderr,
         format=json_formatter,
-        serialize=True,  # Enable built-in JSON serialization for Cloud Logging
         level="ERROR",
         backtrace=True,
         diagnose=True,
@@ -77,10 +75,26 @@ try:
     
     # Add Cloud Logging specific sink for production environments
     # This ensures logs are properly formatted for Google Cloud Logging
+    def cloud_logging_sink(message):
+        """Sink for Cloud Logging integration that ensures proper JSON formatting"""
+        try:
+            # Parse the message to ensure it's valid JSON
+            parsed = json.loads(message)
+            # Output to stdout for Cloud Logging to capture
+            print(message, flush=True)
+        except json.JSONDecodeError:
+            # Fallback to raw message if JSON parsing fails
+            print(json.dumps({
+                "timestamp": datetime.now().isoformat(),
+                "severity": "WARNING",
+                "message": "Log message could not be parsed as JSON",
+                "raw_message": message,
+                "service": "helios"
+            }), flush=True)
+    
     logger.add(
-        lambda msg: None,  # No-op sink for Cloud Logging integration
+        cloud_logging_sink,
         format=json_formatter,
-        serialize=True,
         level="DEBUG",
         backtrace=True,
         diagnose=True,

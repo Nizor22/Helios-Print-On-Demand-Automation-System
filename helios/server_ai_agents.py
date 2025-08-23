@@ -24,6 +24,25 @@ except ImportError:
     error_client = None
     ERROR_REPORTING_AVAILABLE = False
 
+def get_error_context(request: Request, exc: Exception, additional_context: dict = None) -> dict:
+    """Generate comprehensive error context for reporting and logging"""
+    context = {
+        "service": "helios-ai-agents",
+        "endpoint": str(request.url),
+        "method": request.method,
+        "client_ip": request.client.host if request.client else None,
+        "user_agent": request.headers.get("user-agent"),
+        "trace_id": request.headers.get("x-request-id"),
+        "error_type": type(exc).__name__,
+        "error_message": str(exc),
+        "timestamp": time.time(),
+    }
+    
+    if additional_context:
+        context.update(additional_context)
+    
+    return context
+
 # Import and configure centralized logging
 from helios.logging_config import get_logger
 
@@ -50,14 +69,7 @@ app.add_middleware(
 @app.exception_handler(Exception)
 async def global_exception_handler(request: Request, exc: Exception):
     """Global exception handler that reports errors to Google Cloud Error Reporting"""
-    error_context = {
-        "service": "helios-ai-agents",
-        "endpoint": str(request.url),
-        "method": request.method,
-        "client_ip": request.client.host if request.client else None,
-        "user_agent": request.headers.get("user-agent"),
-        "trace_id": request.headers.get("x-request-id"),
-    }
+    error_context = get_error_context(request, exc)
     
     # Log the error with structured context
     logger.error(
@@ -78,7 +90,9 @@ async def global_exception_handler(request: Request, exc: Exception):
                     "endpoint": error_context["endpoint"],
                     "method": error_context["method"],
                     "service": error_context["service"],
-                    "trace_id": error_context["trace_id"]
+                    "trace_id": error_context["trace_id"],
+                    "error_type": error_context["error_type"],
+                    "timestamp": error_context["timestamp"]
                 }
             )
         except Exception as report_error:
