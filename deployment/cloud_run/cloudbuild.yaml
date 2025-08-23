@@ -2,12 +2,12 @@ steps:
   # Deploy Helios AI Orchestrator service to Cloud Run
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
     args: ['gcloud', 'run', 'deploy', 'helios-orchestrator', 
-           '--source', 'deployment/run/orchestrator',
+           '--source', '.',
            '--region', 'us-central1', 
            '--platform', 'managed', 
            '--allow-unauthenticated', 
            '--service-account', 'helios-vertex-ai@$PROJECT_ID.iam.gserviceaccount.com',
-           '--set-env-vars', 'SERVICE_TYPE=orchestrator,GOOGLE_CLOUD_PROJECT=$PROJECT_ID,DRY_RUN=false,ALLOW_LIVE_PUBLISHING=true,PYTHONPATH=/workspace',
+           '--set-env-vars', 'SERVICE_TYPE=orchestrator,GOOGLE_CLOUD_PROJECT=$PROJECT_ID,DRY_RUN=false,ALLOW_LIVE_PUBLISHING=true',
            '--set-secrets', 'PRINTIFY_API_TOKEN=printify-api-token:latest,PRINTIFY_SHOP_ID=printify-shop-id:latest,GOOGLE_API_KEY=google-api-key:latest',
            '--port', '8080',
            '--memory', '1Gi',
@@ -18,12 +18,12 @@ steps:
   # Deploy Helios AI Agents service to Cloud Run  
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
     args: ['gcloud', 'run', 'deploy', 'helios-ai-agents',
-           '--source', 'deployment/run/agents',
+           '--source', '.',
            '--region', 'us-central1',
            '--platform', 'managed',
            '--allow-unauthenticated',
            '--service-account', 'helios-vertex-ai@$PROJECT_ID.iam.gserviceaccount.com',
-           '--set-env-vars', 'SERVICE_TYPE=ai_agents,GOOGLE_CLOUD_PROJECT=$PROJECT_ID,DRY_RUN=false,ALLOW_LIVE_PUBLISHING=true,PYTHONPATH=/workspace',
+           '--set-env-vars', 'SERVICE_TYPE=ai_agents,GOOGLE_CLOUD_PROJECT=$PROJECT_ID,DRY_RUN=false,ALLOW_LIVE_PUBLISHING=true',
            '--set-secrets', 'PRINTIFY_API_TOKEN=printify-api-token:latest,PRINTIFY_SHOP_ID=printify-shop-id:latest,GOOGLE_API_KEY=google-api-key:latest',
            '--port', '8080',
            '--memory', '1Gi',

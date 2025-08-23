@@ -1,10 +1,13 @@
+# Install our own helios package in editable mode
+-e .
+
 # Core web framework and server
-fastapi==0.116.1
+fastapi
 gunicorn
 uvicorn[standard]
 
-# High-level Google Cloud clients (PINNING the main one)
-google-cloud-aiplatform==1.47.0
+# High-level Google Cloud clients
+google-cloud-aiplatform
 google-cloud-firestore
 google-cloud-secret-manager
 google-cloud-storage
@@ -16,7 +19,7 @@ google-generativeai
 
 # Core utilities and data processing
 loguru
-pydantic==2.7.1
+pydantic
 python-dotenv
 pandas
 

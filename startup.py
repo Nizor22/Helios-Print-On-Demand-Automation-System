@@ -1,41 +1,33 @@
 #!/usr/bin/env python3
 """
-Dynamic startup script for Helios services
-Determines which service to run based on SERVICE_TYPE environment variable
+Unified startup script for Helios services
+Routes to the appropriate service based on SERVICE_TYPE environment variable
 """
 
 import os
 import sys
 from pathlib import Path
 
+# Add the current directory to Python path to ensure helios package is accessible
+sys.path.insert(0, str(Path(__file__).parent))
+
 def main():
-    """Main entry point that determines which service to start"""
-    # Add the current directory to Python path to ensure helios package is found
-    current_dir = Path(__file__).parent
-    sys.path.insert(0, str(current_dir))
-    
+    """Main entry point that routes to the appropriate service"""
     service_type = os.getenv('SERVICE_TYPE', 'orchestrator').lower()
     
     if service_type == 'orchestrator':
-        # Import and run the orchestrator service
         from helios.server_orchestrator import app
-        import uvicorn
-        
-        port = int(os.getenv('PORT', 8080))
-        uvicorn.run(app, host='0.0.0.0', port=port)
-        
+        return app
     elif service_type == 'ai_agents':
-        # Import and run the AI agents service
         from helios.server_ai_agents import app
-        import uvicorn
-        
-        port = int(os.getenv('PORT', 8080))
-        uvicorn.run(app, host='0.0.0.0', port=port)
-        
+        return app
     else:
-        print(f"Unknown service type: {service_type}")
-        print("Supported types: orchestrator, ai_agents")
-        sys.exit(1)
+        raise ValueError(f"Unknown SERVICE_TYPE: {service_type}")
+
+# Create the app instance
+app = main()
 
 if __name__ == "__main__":
-    main()
+    import uvicorn
+    port = int(os.getenv('PORT', 8080))
+    uvicorn.run(app, host='0.0.0.0', port=port)
