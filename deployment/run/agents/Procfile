@@ -1,1 +1,0 @@
-web: gunicorn --bind :$PORT --workers 4 --worker-class uvicorn.workers.UvicornWorker server_ai_agents:app
