@@ -1,33 +1,27 @@
 #!/usr/bin/env python3
 """
-Unified startup script for Helios services
-Routes to the appropriate service based on SERVICE_TYPE environment variable
+Dynamic startup script for Helios services.
+Determines which service to run based on SERVICE_TYPE environment variable.
 """
 
 import os
 import sys
-from pathlib import Path
-
-# Add the current directory to Python path to ensure helios package is accessible
-sys.path.insert(0, str(Path(__file__).parent))
 
 def main():
-    """Main entry point that routes to the appropriate service"""
-    service_type = os.getenv('SERVICE_TYPE', 'orchestrator').lower()
+    """Main entry point that determines which service to start."""
+    service_type = os.getenv('SERVICE_TYPE', 'orchestrator')
     
     if service_type == 'orchestrator':
         from helios.server_orchestrator import app
-        return app
+        import uvicorn
+        uvicorn.run(app, host="0.0.0.0", port=int(os.getenv('PORT', 8080)))
     elif service_type == 'ai_agents':
         from helios.server_ai_agents import app
-        return app
+        import uvicorn
+        uvicorn.run(app, host="0.0.0.0", port=int(os.getenv('PORT', 8080)))
     else:
-        raise ValueError(f"Unknown SERVICE_TYPE: {service_type}")
-
-# Create the app instance
-app = main()
+        print(f"Unknown SERVICE_TYPE: {service_type}")
+        sys.exit(1)
 
 if __name__ == "__main__":
-    import uvicorn
-    port = int(os.getenv('PORT', 8080))
-    uvicorn.run(app, host='0.0.0.0', port=port)
+    main()
