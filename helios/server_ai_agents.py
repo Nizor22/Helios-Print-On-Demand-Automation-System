@@ -44,7 +44,7 @@ def get_error_context(request: Request, exc: Exception, additional_context: dict
     return context
 
 # Import and configure centralized logging
-from logging_config import get_logger
+from helios.logging_config import get_logger
 
 # Get logger instance for this service
 logger = get_logger("helios-ai-agents")
