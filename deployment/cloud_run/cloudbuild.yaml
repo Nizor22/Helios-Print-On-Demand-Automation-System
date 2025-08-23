@@ -11,8 +11,6 @@ steps:
       - '--service-account=helios-vertex-ai@${PROJECT_ID}.iam.gserviceaccount.com'
       - '--allow-unauthenticated'
       - '--set-secrets=PRINTIFY_API_TOKEN=printify-api-token:latest,PRINTIFY_SHOP_ID=printify-shop-id:latest,GOOGLE_API_KEY=google-api-key:latest'
-      - '--command=gunicorn'
-      - '--args=--bind=:8080,--workers=4,--worker-class=uvicorn.workers.UvicornWorker,helios.server_orchestrator:app'
 
   # Deploy Helios AI Agents service
   - name: 'gcr.io/cloud-builders/gcloud'
@@ -26,8 +24,6 @@ steps:
       - '--service-account=helios-vertex-ai@${PROJECT_ID}.iam.gserviceaccount.com'
       - '--allow-unauthenticated'
       - '--set-secrets=PRINTIFY_API_TOKEN=printify-api-token:latest,PRINTIFY_SHOP_ID=printify-shop-id:latest,GOOGLE_API_KEY=google-api-key:latest'
-      - '--command=gunicorn'
-      - '--args=--bind=:8080,--workers=4,--worker-class=uvicorn.workers.UvicornWorker,helios.server_ai_agents:app'
 
 options:
   logging: CLOUD_LOGGING_ONLY
