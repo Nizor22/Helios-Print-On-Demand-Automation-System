@@ -6,11 +6,10 @@ steps:
       - 'deploy'
       - 'helios-orchestrator'
       - '--source'
-      - '.'
+      - './deployment/orchestrator'
       - '--region=us-central1'
       - '--service-account=helios-vertex-ai@${PROJECT_ID}.iam.gserviceaccount.com'
       - '--allow-unauthenticated'
-      - '--set-env-vars=SERVICE_TYPE=orchestrator'
       - '--set-secrets=PRINTIFY_API_TOKEN=printify-api-token:latest,PRINTIFY_SHOP_ID=printify-shop-id:latest,GOOGLE_API_KEY=google-api-key:latest'
 
   # Deploy Helios AI Agents service
@@ -20,11 +19,10 @@ steps:
       - 'deploy'
       - 'helios-ai-agents'
       - '--source'
-      - '.'
+      - './deployment/agents'
       - '--region=us-central1'
       - '--service-account=helios-vertex-ai@${PROJECT_ID}.iam.gserviceaccount.com'
       - '--allow-unauthenticated'
-      - '--set-env-vars=SERVICE_TYPE=ai_agents'
       - '--set-secrets=PRINTIFY_API_TOKEN=printify-api-token:latest,PRINTIFY_SHOP_ID=printify-shop-id:latest,GOOGLE_API_KEY=google-api-key:latest'
 
 options:
