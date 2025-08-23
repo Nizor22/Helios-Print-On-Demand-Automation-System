@@ -14,7 +14,6 @@ httptools==0.6.4
 
 # Async support
 anyio==4.10.0
-asyncio
 uvloop==0.21.0
 
 # Data processing and analysis
@@ -55,7 +54,6 @@ protobuf
 
 # AI and machine learning
 google-generativeai
-google-ai-generativelanguage
 
 # Utilities and tools
 python-dotenv==1.1.1
