@@ -223,3 +223,4 @@ This project follows strict quality standards. Before contributing:
 # Testing complete CI/CD pipeline with all IAM permissions granted.
 # Testing CI/CD pipeline with default Cloud Build service account permissions fixed.
 # Testing CI/CD pipeline with helios-cicd-deployer service account permissions fixed.
+# Testing CI/CD pipeline with complete IAM permissions including serviceusage.serviceUsageConsumer.
