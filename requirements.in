@@ -1,0 +1,26 @@
+# Core web framework and server
+fastapi==0.116.1
+gunicorn
+uvicorn[standard]
+
+# High-level Google Cloud clients (PINNING the main one)
+google-cloud-aiplatform==1.47.0
+google-cloud-firestore
+google-cloud-secret-manager
+google-cloud-storage
+google-cloud-vision
+google-cloud-error-reporting
+
+# Generative AI client
+google-generativeai
+
+# Core utilities and data processing
+loguru
+pydantic==2.7.1
+python-dotenv
+pandas
+
+# Other direct dependencies
+pytrends
+gspread
+
