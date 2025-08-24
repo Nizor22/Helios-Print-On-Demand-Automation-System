@@ -4,16 +4,13 @@ Helios AI Orchestrator - Main coordination service for structured AI agent syste
 Coordinates trend analysis, market research, creative direction, and content generation
 """
 
-from fastapi import FastAPI, HTTPException, Request
-from fastapi.middleware.cors import CORSMiddleware
+from fastapi import APIRouter, HTTPException, Request
 from fastapi.responses import JSONResponse
-import uvicorn
 import os
 import logging
 from typing import Dict, Any, List
 from pydantic import BaseModel, Field
 import time
-import traceback
 
 # Google Cloud Error Reporting
 try:
@@ -24,24 +21,7 @@ except ImportError:
     error_client = None
     ERROR_REPORTING_AVAILABLE = False
 
-def get_error_context(request: Request, exc: Exception, additional_context: dict = None) -> dict:
-    """Generate comprehensive error context for reporting and logging"""
-    context = {
-        "service": "helios-orchestrator",
-        "endpoint": str(request.url),
-        "method": request.method,
-        "client_ip": request.client.host if request.client else None,
-        "user_agent": request.headers.get("user-agent"),
-        "trace_id": request.headers.get("x-request-id"),
-        "error_type": type(exc).__name__,
-        "error_message": str(exc),
-        "timestamp": time.time(),
-    }
-    
-    if additional_context:
-        context.update(additional_context)
-    
-    return context
+
 
 # Import and configure centralized logging
 from helios.logging_config import get_logger
@@ -49,116 +29,13 @@ from helios.logging_config import get_logger
 # Get logger instance for this service
 logger = get_logger("helios-orchestrator")
 
-# Create FastAPI app
-app = FastAPI(
-    title="Helios AI Orchestrator",
-    description="Structured AI Agent System for Print-On-Demand Automation",
-    version="1.0.0"
+# Create APIRouter
+router = APIRouter(
+    prefix="",
+    tags=["orchestrator"]
 )
 
-# Add CORS middleware
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
-# Global exception handler for unhandled errors
-@app.exception_handler(Exception)
-async def global_exception_handler(request: Request, exc: Exception):
-    """Global exception handler that reports errors to Google Cloud Error Reporting"""
-    error_context = get_error_context(request, exc)
-    
-    # Log the error with structured context
-    logger.error(
-        f"Unhandled exception in {request.url.path}: {str(exc)}",
-        error_code=type(exc).__name__,
-        error_details=str(exc),
-        context=error_context,
-        exception=exc
-    )
-    
-    # Report to Google Cloud Error Reporting if available
-    if ERROR_REPORTING_AVAILABLE and error_client:
-        try:
-            error_client.report_exception(
-                exc,
-                user=error_context.get("client_ip"),
-                context={
-                    "endpoint": error_context["endpoint"],
-                    "method": error_context["method"],
-                    "service": error_context["service"],
-                    "trace_id": error_context["trace_id"],
-                    "error_type": error_context["error_type"],
-                    "timestamp": error_context["timestamp"]
-                }
-            )
-        except Exception as report_error:
-            logger.warning(f"Failed to report error to Google Cloud Error Reporting: {report_error}")
-    
-    # Return structured error response
-    return JSONResponse(
-        status_code=500,
-        content={
-            "error": "Internal server error",
-            "error_code": type(exc).__name__,
-            "service": "helios-orchestrator",
-            "timestamp": time.time(),
-            "trace_id": error_context["trace_id"]
-        }
-    )
-
-# HTTP exception handler for structured error responses
-@app.exception_handler(HTTPException)
-async def http_exception_handler(request: Request, exc: HTTPException):
-    """Handle HTTP exceptions with structured logging and error reporting"""
-    error_context = {
-        "service": "helios-orchestrator",
-        "endpoint": str(request.url),
-        "method": request.method,
-        "status_code": exc.status_code,
-        "client_ip": request.client.host if request.client else None,
-        "user_agent": request.headers.get("user-agent"),
-        "trace_id": request.headers.get("x-request-id"),
-    }
-    
-    # Log the HTTP error
-    logger.warning(
-        f"HTTP {exc.status_code} error in {request.url.path}: {exc.detail}",
-        error_code=f"HTTP_{exc.status_code}",
-        error_details=exc.detail,
-        context=error_context
-    )
-    
-    # Report to Google Cloud Error Reporting for 5xx errors
-    if ERROR_REPORTING_AVAILABLE and error_client and exc.status_code >= 500:
-        try:
-            error_client.report_exception(
-                exc,
-                user=error_context.get("client_ip"),
-                context={
-                    "endpoint": error_context["endpoint"],
-                    "method": error_context["method"],
-                    "service": error_context["service"],
-                    "status_code": exc.status_code,
-                    "trace_id": error_context["trace_id"]
-                }
-            )
-        except Exception as report_error:
-            logger.warning(f"Failed to report error to Google Cloud Error Reporting: {report_error}")
-    
-    return JSONResponse(
-        status_code=exc.status_code,
-        content={
-            "error": exc.detail,
-            "error_code": f"HTTP_{exc.status_code}",
-            "service": "helios-orchestrator",
-            "timestamp": time.time(),
-            "trace_id": error_context["trace_id"]
-        }
-    )
+# Note: Exception handlers are now handled by the main FastAPI app in main.py
 
 # Pydantic models for structured outputs
 class TrendAnalysisRequest(BaseModel):
@@ -187,7 +64,7 @@ class OrchestrationResult(BaseModel):
     execution_time_ms: int
     agent_metrics: Dict[str, Any]
 
-@app.get("/")
+@router.get("/")
 async def root():
     """Root endpoint"""
     return {
@@ -197,7 +74,7 @@ async def root():
         "architecture": "Structured AI Agent System"
     }
 
-@app.get("/health")
+@router.get("/health")
 async def health_check():
     """Health check endpoint"""
     return {
@@ -206,7 +83,7 @@ async def health_check():
         "timestamp": "2025-08-19T00:00:00Z"
     }
 
-@app.get("/mcp")
+@router.get("/mcp")
 async def mcp_info():
     """MCP protocol information"""
     return {
@@ -224,7 +101,7 @@ async def mcp_info():
         "system_type": "Structured AI Agent System"
     }
 
-@app.post("/orchestrate", response_model=OrchestrationResult)
+@router.post("/orchestrate", response_model=OrchestrationResult)
 async def orchestrate_operation(request: OrchestrationRequest):
     """Orchestrate AI agent operations with structured outputs"""
     try:
@@ -252,7 +129,7 @@ async def orchestrate_operation(request: OrchestrationRequest):
         logger.error(f"Orchestration error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.post("/trends/analyze", response_model=List[TrendAnalysisResult])
+@router.post("/trends/analyze", response_model=List[TrendAnalysisResult])
 async def analyze_trends(request: TrendAnalysisRequest):
     """Analyze market trends using structured AI agent"""
     try:
@@ -279,7 +156,7 @@ async def analyze_trends(request: TrendAnalysisRequest):
         logger.error(f"Trend analysis error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.post("/run-full-workflow")
+@router.post("/run-full-workflow")
 async def run_full_workflow():
     """
     Execute the complete autonomous workflow:
@@ -304,7 +181,7 @@ async def run_full_workflow():
         logger.error(f"Workflow execution error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.post("/run")
+@router.post("/run")
 async def run_once():
     """Run a single orchestration cycle"""
     try:
@@ -322,7 +199,7 @@ async def run_once():
         logger.error(f"Orchestration cycle error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.post("/run-async")
+@router.post("/run-async")
 async def run_async():
     """Run orchestration asynchronously"""
     try:
@@ -339,7 +216,7 @@ async def run_async():
         logger.error(f"Async orchestration error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.get("/mcp/google-trends")
+@router.get("/mcp/google-trends")
 async def mcp_google_trends(query: str = "", geo: str = "US", time_range: str = "1d"):
     """MCP endpoint for Google Trends data analysis"""
     try:
@@ -374,7 +251,7 @@ async def mcp_google_trends(query: str = "", geo: str = "US", time_range: str = 
             "message": str(e)
         }
 
-@app.get("/agents/status")
+@router.get("/agents/status")
 async def get_agents_status():
     """Get status of all AI agents"""
     return {
@@ -403,7 +280,7 @@ async def get_agents_status():
         "system_type": "Structured AI Agent System"
     }
 
-@app.get("/system/architecture")
+@router.get("/system/architecture")
 async def get_system_architecture():
     """Get system architecture information"""
     return {
@@ -426,6 +303,4 @@ async def get_system_architecture():
         ]
     }
 
-if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 8080))
-    uvicorn.run(app, host="0.0.0.0", port=port, log_level="info")
+

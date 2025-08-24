@@ -103,43 +103,9 @@ try:
         filter=lambda record: record["level"].no >= logger.level("INFO").no
     )
     
-    # Configure loguru to intercept standard logging
-    class InterceptHandler(logging.Handler):
-        def emit(self, record):
-            try:
-                level = logger.level(record.levelname).name
-            except ValueError:
-                level = record.levelno
-            
-            frame, depth = logging.currentframe(), 2
-            while frame.f_code.co_filename == logging.__file__:
-                frame = frame.f_back
-                depth += 1
-            
-            logger.opt(depth=depth, exception=record.exc_info).log(
-                level, record.getMessage(),
-                service_type=record.name,
-                trace_id=getattr(record, 'trace_id', None),
-                user_id=getattr(record, 'user_id', None),
-                operation=getattr(record, 'operation', None),
-                duration_ms=getattr(record, 'duration_ms', None),
-                resource_type=getattr(record, 'resource_type', None),
-                resource_id=getattr(record, 'resource_id', None),
-                error_code=getattr(record, 'error_code', None),
-                error_details=getattr(record, 'error_details', None),
-                context=getattr(record, 'context', {})
-            )
-    
-    # Intercept standard logging
-    logging.basicConfig(handlers=[InterceptHandler()], level=0, force=True)
-    
-    # Configure specific loggers
-    for logger_name in logging.root.manager.loggerDict:
-        logging.getLogger(logger_name).handlers = []
-        logging.getLogger(logger_name).propagate = True
-    
-    # Set loguru as the default logger
-    logging.getLogger().handlers = [InterceptHandler()]
+    # Don't intercept standard logging to avoid conflicts with Uvicorn
+    # This prevents the KeyError: '"timestamp"' issue
+    # Let Uvicorn handle its own logging naturally
     
 except ImportError:
     # Fallback to standard logging if loguru is not available

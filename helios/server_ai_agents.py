@@ -4,16 +4,13 @@ Helios AI Agents Service - Specialized AI agents for Print-On-Demand automation
 Implements: Trend Analyst, Market Researcher, Creative Director, Content Writer
 """
 
-from fastapi import FastAPI, HTTPException, Request
-from fastapi.middleware.cors import CORSMiddleware
+from fastapi import APIRouter, HTTPException, Request
 from fastapi.responses import JSONResponse
-import uvicorn
 import os
 import logging
 from typing import Dict, Any, List
 from pydantic import BaseModel, Field
 import time
-import traceback
 
 # Google Cloud Error Reporting
 try:
@@ -24,24 +21,7 @@ except ImportError:
     error_client = None
     ERROR_REPORTING_AVAILABLE = False
 
-def get_error_context(request: Request, exc: Exception, additional_context: dict = None) -> dict:
-    """Generate comprehensive error context for reporting and logging"""
-    context = {
-        "service": "helios-ai-agents",
-        "endpoint": str(request.url),
-        "method": request.method,
-        "client_ip": request.client.host if request.client else None,
-        "user_agent": request.headers.get("user-agent"),
-        "trace_id": request.headers.get("x-request-id"),
-        "error_type": type(exc).__name__,
-        "error_message": str(exc),
-        "timestamp": time.time(),
-    }
-    
-    if additional_context:
-        context.update(additional_context)
-    
-    return context
+
 
 # Import and configure centralized logging
 from helios.logging_config import get_logger
@@ -49,115 +29,15 @@ from helios.logging_config import get_logger
 # Get logger instance for this service
 logger = get_logger("helios-ai-agents")
 
-# Create FastAPI app
-app = FastAPI(
-    title="Helios AI Agents Service",
-    description="Specialized AI agents for structured Print-On-Demand automation",
-    version="1.0.0"
+# Create APIRouter
+router = APIRouter(
+    prefix="",
+    tags=["ai-agents"]
 )
 
-# Add CORS middleware
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
 
-# Global exception handler for unhandled errors
-@app.exception_handler(Exception)
-async def global_exception_handler(request: Request, exc: Exception):
-    """Global exception handler that reports errors to Google Cloud Error Reporting"""
-    error_context = get_error_context(request, exc)
-    
-    # Log the error with structured context
-    logger.error(
-        f"Unhandled exception in {request.url.path}: {str(exc)}",
-        error_code=type(exc).__name__,
-        error_details=str(exc),
-        context=error_context,
-        exception=exc
-    )
-    
-    # Report to Google Cloud Error Reporting if available
-    if ERROR_REPORTING_AVAILABLE and error_client:
-        try:
-            error_client.report_exception(
-                exc,
-                user=error_context.get("client_ip"),
-                context={
-                    "endpoint": error_context["endpoint"],
-                    "method": error_context["method"],
-                    "service": error_context["service"],
-                    "trace_id": error_context["trace_id"],
-                    "error_type": error_context["error_type"],
-                    "timestamp": error_context["timestamp"]
-                }
-            )
-        except Exception as report_error:
-            logger.warning(f"Failed to report error to Google Cloud Error Reporting: {report_error}")
-    
-    # Return structured error response
-    return JSONResponse(
-        status_code=500,
-        content={
-            "error": "Internal server error",
-            "error_code": type(exc).__name__,
-            "service": "helios-ai-agents",
-            "timestamp": time.time(),
-            "trace_id": error_context["trace_id"]
-        }
-    )
 
-# HTTP exception handler for structured error responses
-@app.exception_handler(HTTPException)
-async def http_exception_handler(request: Request, exc: HTTPException):
-    """Handle HTTP exceptions with structured logging and error reporting"""
-    error_context = {
-        "service": "helios-ai-agents",
-        "endpoint": str(request.url),
-        "method": request.method,
-        "status_code": exc.status_code,
-        "client_ip": request.client.host if request.client else None,
-        "user_agent": request.headers.get("user-agent"),
-        "trace_id": request.headers.get("x-request-id"),
-    }
-    
-    # Log the HTTP error
-    logger.warning(
-        f"HTTP {exc.status_code} error in {request.url.path}: {exc.detail}",
-        error_details=exc.detail,
-        context=error_context
-    )
-    
-    # Report to Google Cloud Error Reporting for 5xx errors
-    if ERROR_REPORTING_AVAILABLE and error_client and exc.status_code >= 500:
-        try:
-            error_client.report_exception(
-                exc,
-                user=error_context.get("client_ip"),
-                context={
-                    "endpoint": error_context["endpoint"],
-                    "method": error_context["method"],
-                    "service": error_context["service"],
-                    "status_code": exc.status_code,
-                    "trace_id": error_context["trace_id"]
-                }
-            )
-        except Exception as report_error:
-            logger.warning(f"Failed to report error to Google Cloud Error Reporting: {report_error}")
-    
-    return JSONResponse(
-        status_code=exc.status_code,
-        content={
-            "error": exc.detail,
-            "error_code": f"HTTP_{exc.status_code}",
-            "service": "helios-ai-agents",
-            "timestamp": time.time(),
-            "trace_id": error_context["trace_id"]
-        }
-    )
+# Note: Exception handlers are now handled by the main FastAPI app in main.py
 
 # Pydantic models for structured AI agent outputs
 class TrendAnalysisInput(BaseModel):
@@ -213,7 +93,7 @@ class ContentGenerationOutput(BaseModel):
     brand_alignment: float = Field(..., ge=0.0, le=10.0, description="Brand alignment score")
     confidence_score: float = Field(..., ge=0.0, le=1.0)
 
-@app.get("/")
+@router.get("/")
 async def root():
     """Root endpoint"""
     return {
@@ -223,7 +103,7 @@ async def root():
         "agents": ["trend_analyst", "market_researcher", "creative_director", "content_writer"]
     }
 
-@app.get("/health")
+@router.get("/health")
 async def health_check():
     """Health check endpoint"""
     return {
@@ -232,7 +112,7 @@ async def health_check():
         "timestamp": "2025-08-19T00:00:00Z"
     }
 
-@app.get("/mcp")
+@router.get("/mcp")
 async def mcp_info():
     """MCP protocol information"""
     return {
@@ -249,7 +129,7 @@ async def mcp_info():
         "system_type": "Structured AI Agent System"
     }
 
-@app.post("/agents/trend-analyst", response_model=TrendAnalysisOutput)
+@router.post("/agents/trend-analyst", response_model=TrendAnalysisOutput)
 async def analyze_trends(request: TrendAnalysisInput):
     """Trend Analyst AI agent - analyzes market trends with structured output"""
     try:
@@ -274,7 +154,7 @@ async def analyze_trends(request: TrendAnalysisInput):
         logger.error(f"Trend analysis error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.post("/agents/market-researcher", response_model=MarketResearchOutput)
+@router.post("/agents/market-researcher", response_model=MarketResearchOutput)
 async def research_market(request: MarketResearchInput):
     """Market Researcher AI agent - conducts market research with structured output"""
     try:
@@ -305,7 +185,7 @@ async def research_market(request: MarketResearchInput):
         logger.error(f"Market research error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.post("/agents/creative-director", response_model=CreativeDirectionOutput)
+@router.post("/agents/creative-director", response_model=CreativeDirectionOutput)
 async def provide_creative_direction(request: CreativeDirectionInput):
     """Creative Director AI agent - provides design direction with structured output"""
     try:
@@ -336,7 +216,7 @@ async def provide_creative_direction(request: CreativeDirectionInput):
         logger.error(f"Creative direction error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.post("/agents/content-writer", response_model=ContentGenerationOutput)
+@router.post("/agents/content-writer", response_model=ContentGenerationOutput)
 async def generate_content(request: ContentGenerationInput):
     """Content Writer AI agent - generates content with structured output"""
     try:
@@ -358,7 +238,7 @@ async def generate_content(request: ContentGenerationInput):
         logger.error(f"Content generation error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.get("/agents/status")
+@router.get("/agents/status")
 async def get_agents_status():
     """Get status of all AI agents"""
     return {
@@ -392,6 +272,4 @@ async def get_agents_status():
         "predictability": "Guaranteed through Pydantic validation"
     }
 
-if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 8080))
-    uvicorn.run(app, host="0.0.0.0", port=port, log_level="info")
+
