@@ -23,6 +23,3 @@ pandas
 # Other dependencies
 pytrends
 gspread
-
-# Install our package in editable mode
--e .
