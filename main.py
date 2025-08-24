@@ -95,29 +95,29 @@ def create_app() -> FastAPI:
             }
         )
     
-        # Import and include the appropriate routers based on service type
-        if service_type == 'orchestrator':
-            # Import the orchestrator app and include its routes
-            from helios.server_orchestrator import app as orchestrator_app
-            # Copy the routes from the orchestrator app
-            app.routes.extend(orchestrator_app.routes)
-            
-        elif service_type == 'ai_agents':
-            # Import the AI agents app and include its routes
-            from helios.server_ai_agents import app as agents_app
-            # Copy the routes from the AI agents app
-            app.routes.extend(agents_app.routes)
-            
-        else:
-            # Fallback: create a basic health check endpoint
-            @app.get("/")
-            async def root():
-                return {"message": f"Helios {service_type} service is running", "status": "unknown_service_type"}
-            
-            @app.get("/health")
-            async def health_check():
-                return {"status": "healthy", "service_type": service_type}
-    
+    # Import and include the appropriate routers based on service type
+    if service_type == 'orchestrator':
+        # Import the orchestrator app and include its routes
+        from helios.server_orchestrator import app as orchestrator_app
+        # Copy the routes from the orchestrator app
+        app.routes.extend(orchestrator_app.routes)
+        
+    elif service_type == 'ai_agents':
+        # Import the AI agents app and include its routes
+        from helios.server_ai_agents import app as agents_app
+        # Copy the routes from the AI agents app
+        app.routes.extend(agents_app.routes)
+        
+    else:
+        # Fallback: create a basic health check endpoint
+        @app.get("/")
+        async def root():
+            return {"message": f"Helios {service_type} service is running", "status": "unknown_service_type"}
+        
+        @app.get("/health")
+        async def health_check():
+            return {"status": "healthy", "service_type": service_type}
+
     return app
 
 # Create the app instance
