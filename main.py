@@ -94,30 +94,20 @@ def create_app() -> FastAPI:
             }
         )
     
-    # Import and include the appropriate routers based on service type
+    # Import and mount the appropriate service based on SERVICE_TYPE
     if service_type == 'orchestrator':
-        # Import the orchestrator app and include its routes
         from helios.server_orchestrator import app as orchestrator_app
-        # Copy the routes from the orchestrator app
-        for route in orchestrator_app.routes:
-            app.routes.append(route)
+        app.mount("/", orchestrator_app)
         
     elif service_type == 'ai_agents':
-        # Import the AI agents app and include its routes
         from helios.server_ai_agents import app as agents_app
-        # Copy the routes from the AI agents app
-        for route in agents_app.routes:
-            app.routes.append(route)
+        app.mount("/", agents_app)
         
     else:
-        # Fallback: create a basic health check endpoint
-        @app.get("/")
-        async def root():
-            return {"message": f"Helios {service_type} service is running", "status": "unknown_service_type"}
-        
+        # This fallback is only for an unrecognized service type
         @app.get("/health")
         async def health_check():
-            return {"status": "healthy", "service_type": service_type}
+            return {"status": "healthy", "service_type": "invalid"}
 
     return app
 
