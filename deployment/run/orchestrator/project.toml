@@ -1,8 +1,0 @@
-[build]
-requires = [
-    { name = "google.python.pip" }
-]
-
-[[build.env]]
-name = "GOOGLE_ENTRYPOINT"
-value = "gunicorn --bind :$PORT --workers 4 --worker-class uvicorn.workers.UvicornWorker helios.server_orchestrator:app"
