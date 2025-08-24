@@ -6,7 +6,6 @@ Dynamically creates the appropriate FastAPI application based on SERVICE_TYPE en
 
 import os
 import time
-import traceback
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
@@ -100,13 +99,15 @@ def create_app() -> FastAPI:
         # Import the orchestrator app and include its routes
         from helios.server_orchestrator import app as orchestrator_app
         # Copy the routes from the orchestrator app
-        app.routes.extend(orchestrator_app.routes)
+        for route in orchestrator_app.routes:
+            app.routes.append(route)
         
     elif service_type == 'ai_agents':
         # Import the AI agents app and include its routes
         from helios.server_ai_agents import app as agents_app
         # Copy the routes from the AI agents app
-        app.routes.extend(agents_app.routes)
+        for route in agents_app.routes:
+            app.routes.append(route)
         
     else:
         # Fallback: create a basic health check endpoint
