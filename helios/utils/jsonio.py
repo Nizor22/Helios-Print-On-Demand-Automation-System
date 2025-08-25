@@ -8,7 +8,7 @@ except ImportError:
     ORJSON_AVAILABLE = False
 
 from pathlib import Path
-from typing import Any
+from typing import Any, Union
 
 
 def dumps(data: Any) -> str:
