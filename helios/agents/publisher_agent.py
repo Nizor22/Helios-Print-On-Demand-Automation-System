@@ -4,7 +4,7 @@ import time
 from dataclasses import dataclass
 import os
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
 from ..publisher.printify_publisher import PrintifyPublisher
 
@@ -12,11 +12,11 @@ from ..publisher.printify_publisher import PrintifyPublisher
 @dataclass
 class PublicationResult:
     product_title: str
-    printify_product_id: str | None
-    image_upload_id: str | None
+    printify_product_id: Optional[str]
+    image_upload_id: Optional[str]
     status: str
     final_price_cents: int
-    error_details: str | None = None
+    error_details: Optional[str] = None
 
 
 class PrintifyPublisherAgent:
@@ -33,7 +33,7 @@ class PrintifyPublisherAgent:
         for item in listings:
             try:
                 # 1) Upload image (prefer URL if provided; else local file path)
-                image_id: str | None = None
+                image_id: Optional[str] = None
                 image_url = item.get("image_url")
                 if image_url:
                     image_id = self.publisher.upload_design_url(image_url, file_name=Path(item.get("image_path", "design.png")).name)

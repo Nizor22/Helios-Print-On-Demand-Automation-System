@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import random
 import time
-from typing import Any, Dict, List, Tuple
+from typing import Any, Dict, List, Tuple, Optional
 from ..config import load_config
 # MCPClient removed - using services version instead
 
@@ -23,7 +23,7 @@ class ZeitgeistAgent:
             self.mcp_client = None
         self.start_time = None
 
-    async def run(self, seed: str | None = None) -> Dict[str, Any]:
+    async def run(self, seed: Optional[str] = None) -> Dict[str, Any]:
         """Run enhanced trend analysis preferring unified MCP trend_research, using seed as a hint."""
         
         self.start_time = time.time()

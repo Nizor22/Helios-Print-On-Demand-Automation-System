@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional
 import requests
 import json
 import time
@@ -9,7 +9,7 @@ from datetime import datetime, timedelta
 from loguru import logger
 
 
-def fetch_trends(seed: str | None = None, geo: str = "US", timeframe: str = "now 7-d", top_n: int = 10) -> List[str]:
+def fetch_trends(seed: Optional[str] = None, geo: str = "US", timeframe: str = "now 7-d", top_n: int = 10) -> List[str]:
     """
     Fetch real-time trending search terms using multiple sources
     
