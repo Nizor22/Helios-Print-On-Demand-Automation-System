@@ -18,7 +18,7 @@ def dumps(data: Any) -> str:
         return json.dumps(data, indent=2, sort_keys=True)
 
 
-def dump_to_file(path: str | Path, data: Any) -> None:
+def dump_to_file(path: Union[str, Path], data: Any) -> None:
     p = Path(path)
     p.parent.mkdir(parents=True, exist_ok=True)
     if ORJSON_AVAILABLE:
