@@ -7,7 +7,7 @@ name = "helios-orchestrator"
 version = "1.0.0"
 description = "Helios AI Orchestrator Service - Main coordination service for structured AI agent system"
 readme = "README.md"
-requires-python = ">=3.13"
+requires-python = ">=3.11"
 license = {text = "MIT"}
 authors = [
     {name = "Helios Team", email = "team@helios.ai"}

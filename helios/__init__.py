@@ -1,5 +1,6 @@
-__all__ = [
-    "__version__",
-]
-
-__version__ = "0.2.0"
+"""
+Helios Hybrid AI System Package
+"""
+__version__ = "1.0.0"
+__author__ = "Helios Team"
+__email__ = "team@helios.ai"
