@@ -51,7 +51,7 @@ class EtsyClient:
         taxonomy_id: int,
         shipping_profile_id: Optional[int] = None,
         return_policy_id: Optional[int] = None,
-        tags: Optional[list[str]] = None,
+        tags: Optional[List[str]] = None,
         who_made: str = "i_did",
         when_made: str = "made_to_order",
         is_supply: bool = False,

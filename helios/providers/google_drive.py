@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any, Iterable
+from typing import Any, Iterable, Dict, List
 import io
 
 from google.oauth2 import service_account
@@ -12,18 +12,18 @@ SCOPES = [
 ]
 
 
-def _get_drive(creds_dict: dict[str, Any]):
+def _get_drive(creds_dict: Dict[str, Any]):
     credentials = service_account.Credentials.from_service_account_info(creds_dict, scopes=SCOPES)
     return build("drive", "v3", credentials=credentials, cache_discovery=False)
 
 
 async def upload_assets(
-    files: list[str],
+    files: List[str],
     folder_id: str,
-    creds_dict: dict[str, Any],
-) -> list[dict[str, Any]]:
+    creds_dict: Dict[str, Any],
+) -> List[Dict[str, Any]]:
     drive = _get_drive(creds_dict)
-    results: list[dict[str, Any]] = []
+    results: List[Dict[str, Any]] = []
     for path in files:
         body = {"name": path.split("/")[-1], "parents": [folder_id]}
         media = MediaIoBaseUpload(io.BytesIO(b"placeholder-bytes"), mimetype="application/octet-stream")

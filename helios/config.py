@@ -3,15 +3,15 @@ from __future__ import annotations
 import os
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Optional
+from typing import List, Optional
 
 from dotenv import load_dotenv, find_dotenv
 
-def split_csv(value: str | None) -> list[str]:
-    """Split a comma-separated string into a list, handling None values"""
+def split_csv(value: Optional[str]) -> List[str]:
+    """Split a comma-separated string into a list"""
     if not value:
         return []
-    return [part.strip() for part in value.split(",") if part.strip()]
+    return [item.strip() for item in value.split(',') if item.strip()]
 
 
 @dataclass
@@ -23,8 +23,8 @@ class HeliosConfig:
     # Product defaults
     blueprint_id: Optional[int] = None
     print_provider_id: Optional[int] = None
-    default_colors: list[str] = None
-    default_sizes: list[str] = None
+    default_colors: Optional[List[str]] = None
+    default_sizes: Optional[List[str]] = None
     preferred_provider_name: Optional[str] = None
 
     # Behavior

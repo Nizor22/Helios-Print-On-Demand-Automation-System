@@ -1,5 +1,5 @@
 steps:
-  # Build and deploy orchestrator service
+  # Build and deploy orchestrator service only (for testing)
   - name: 'gcr.io/cloud-builders/gcloud'
     args:
     - 'run'
@@ -16,24 +16,6 @@ steps:
     - '--allow-unauthenticated'
     - '--set-env-vars'
     - 'SERVICE_TYPE=orchestrator'
-
-  # Build and deploy agents service
-  - name: 'gcr.io/cloud-builders/gcloud'
-    args:
-    - 'run'
-    - 'deploy'
-    - 'helios-ai-agents'
-    - '--source'
-    - '.'
-    - '--region'
-    - 'us-central1'
-    - '--platform'
-    - 'managed'
-    - '--memory'
-    - '1Gi'
-    - '--allow-unauthenticated'
-    - '--set-env-vars'
-    - 'SERVICE_TYPE=ai_agents'
 
 timeout: 1800s
 options:
