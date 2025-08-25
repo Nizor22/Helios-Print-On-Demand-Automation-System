@@ -1,0 +1,28 @@
+runtime: python311
+entrypoint: python start_orchestrator.py
+
+env_variables:
+  SERVICE_TYPE: "orchestrator"
+
+automatic_scaling:
+  min_instances: 0
+  max_instances: 10
+
+resources:
+  cpu: 1
+  memory_gb: 1
+  disk_size_gb: 10
+
+liveness_check:
+  path: "/health"
+  initial_delay_sec: 30
+  timeout_sec: 10
+  period_sec: 30
+  failure_threshold: 3
+
+readiness_check:
+  path: "/health"
+  initial_delay_sec: 10
+  timeout_sec: 10
+  period_sec: 10
+  failure_threshold: 3

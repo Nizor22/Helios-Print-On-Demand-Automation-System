@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import math
 from pathlib import Path
-from typing import Tuple
+from typing import Tuple, Union
 
 from PIL import Image, ImageDraw, ImageFont
 
@@ -10,7 +10,7 @@ from PIL import Image, ImageDraw, ImageFont
 DEFAULT_CANVAS = (4500, 5400)  # width, height
 
 
-def load_font(fonts_dir: Path, size: int) -> ImageFont.FreeTypeFont | ImageFont.ImageFont:
+def load_font(fonts_dir: Path, size: int) -> Union[ImageFont.FreeTypeFont, ImageFont.ImageFont]:
     # Try some common fonts if available in assets; otherwise fallback to default
     preferred = [
         "Inter-Bold.ttf",
