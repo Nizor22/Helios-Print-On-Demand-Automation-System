@@ -1,58 +1,65 @@
 steps:
-  # Build and test the package first
-  - name: 'python:3.12'
-    entrypoint: bash
-    args:
-      - -c
-      - |
-        pip install -r requirements.txt
-        python -c "import helios; print('Package imports successfully')"
-        python -c "
-        import os
-        os.environ['SERVICE_TYPE'] = 'orchestrator'
-        from main import app
-        print('Orchestrator app loaded successfully')
-        "
-        python -c "
-        import os  
-        os.environ['SERVICE_TYPE'] = 'ai_agents'
-        from main import app
-        print('AI Agents app loaded successfully')
-        "
-
-  # Deploy Helios AI Orchestrator service
+  # Build and deploy orchestrator service
   - name: 'gcr.io/cloud-builders/gcloud'
+    id: 'deploy-orchestrator'
     args:
-      - 'run'
-      - 'deploy'
-      - 'helios-orchestrator'
-      - '--source'
-      - '.'
-      - '--region=us-central1'
-      - '--service-account=helios-vertex-ai@${PROJECT_ID}.iam.gserviceaccount.com'
-      - '--allow-unauthenticated'
-      - '--set-secrets=PRINTIFY_API_TOKEN=printify-api-token:latest,PRINTIFY_SHOP_ID=printify-shop-id:latest,GOOGLE_API_KEY=google-api-key:latest'
-      - '--set-env-vars=SERVICE_TYPE=orchestrator'
-      - '--command=gunicorn'
-      - '--args=--bind=:$$PORT,--workers=4,--worker-class=uvicorn.workers.UvicornWorker,main:app'
+    - 'run'
+    - 'deploy'
+    - 'helios-orchestrator'
+    - '--source'
+    - './orchestrator'
+    - '--region'
+    - 'us-central1'
+    - '--platform'
+    - 'managed'
+    - '--runtime'
+    - 'python313'
+    - '--memory'
+    - '512Mi'
+    - '--cpu'
+    - '1'
+    - '--max-instances'
+    - '10'
+    - '--timeout'
+    - '300s'
+    - '--concurrency'
+    - '80'
+    - '--allow-unauthenticated'
+    - '--set-env-vars'
+    - 'ENV=production,PYTHONUNBUFFERED=true'
 
-  # Deploy Helios AI Agents service
+  # Build and deploy agents service
   - name: 'gcr.io/cloud-builders/gcloud'
+    id: 'deploy-agents'
     args:
-      - 'run'
-      - 'deploy'
-      - 'helios-ai-agents'
-      - '--source'
-      - '.'
-      - '--region=us-central1'
-      - '--service-account=helios-vertex-ai@${PROJECT_ID}.iam.gserviceaccount.com'
-      - '--allow-unauthenticated'
-      - '--set-secrets=PRINTIFY_API_TOKEN=printify-api-token:latest,PRINTIFY_SHOP_ID=printify-shop-id:latest,GOOGLE_API_KEY=google-api-key:latest'
-      - '--set-env-vars=SERVICE_TYPE=ai_agents'
-      - '--command=gunicorn'
-      - '--args=--bind=:$$PORT,--workers=4,--worker-class=uvicorn.workers.UvicornWorker,main:app'
+    - 'run'
+    - 'deploy'
+    - 'helios-ai-agents'
+    - '--source'
+    - './agents'
+    - '--region'
+    - 'us-central1'
+    - '--platform'
+    - 'managed'
+    - '--runtime'
+    - 'python313'
+    - '--memory'
+    - '1Gi'
+    - '--cpu'
+    - '1'
+    - '--max-instances'
+    - '5'
+    - '--timeout'
+    - '600s'
+    - '--concurrency'
+    - '50'
+    - '--allow-unauthenticated'
+    - '--set-env-vars'
+    - 'ENV=production,PYTHONUNBUFFERED=true'
 
+timeout: 1800s
 options:
   logging: CLOUD_LOGGING_ONLY
-
-timeout: '1800s'
+  machineType: 'E2_HIGHCPU_8'
+  env:
+    - 'CLOUDSDK_PYTHON=python3.13'

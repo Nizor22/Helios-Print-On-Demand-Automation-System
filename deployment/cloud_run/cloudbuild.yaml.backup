@@ -1,0 +1,29 @@
+steps:
+  # Deploy Helios AI Orchestrator service
+  - name: 'gcr.io/cloud-builders/gcloud'
+    args:
+      - 'run'
+      - 'deploy'
+      - 'helios-orchestrator'
+      - '--source'
+      - '.'
+      - '--region=us-central1'
+      - '--service-account=helios-vertex-ai@${PROJECT_ID}.iam.gserviceaccount.com'
+      - '--allow-unauthenticated'
+      - '--set-secrets=PRINTIFY_API_TOKEN=printify-api-token:latest,PRINTIFY_SHOP_ID=printify-shop-id:latest,GOOGLE_API_KEY=google-api-key:latest'
+
+  # Deploy Helios AI Agents service
+  - name: 'gcr.io/cloud-builders/gcloud'
+    args:
+      - 'run'
+      - 'deploy'
+      - 'helios-ai-agents'
+      - '--source'
+      - '.'
+      - '--region=us-central1'
+      - '--service-account=helios-vertex-ai@${PROJECT_ID}.iam.gserviceaccount.com'
+      - '--allow-unauthenticated'
+      - '--set-secrets=PRINTIFY_API_TOKEN=printify-api-token:latest,PRINTIFY_SHOP_ID=printify-shop-id:latest,GOOGLE_API_KEY=google-api-key:latest'
+
+options:
+  logging: CLOUD_LOGGING_ONLY

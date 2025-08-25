@@ -1,0 +1,712 @@
+{
+  "system_overview": {
+    "name": "Helios Autonomous Store",
+    "description": "Python 3.13.6 based autonomous AI e-commerce system using Google Cloud Platform, Google MCP, and Gemini AI for trend-to-product automation",
+    "technology_stack": {
+      "runtime": "Python 3.13.6",
+      "cloud_platform": "Google Cloud Platform",
+      "ai_platform": "Google Gemini (Vertex AI)",
+      "mcp_framework": "Google MCP Tools (latest)",
+      "development_environment": "Cursor AI IDE",
+      "architecture": "Microservices on Google Cloud Run"
+    },
+    "target_performance": {
+      "execution_time": "< 5 minutes trend-to-product",
+      "success_rate": "> 85%",
+      "automation_level": "> 95%",
+      "roi_target": "> 300%"
+    }
+  },
+  "google_cloud_infrastructure": {
+    "project_setup": {
+      "project_id": "helios-autonomous-store",
+      "required_apis": [
+        "aiplatform.googleapis.com",
+        "cloudfunctions.googleapis.com",
+        "cloudrun.googleapis.com",
+        "firestore.googleapis.com",
+        "cloudstorage.googleapis.com",
+        "sheets.googleapis.com",
+        "drive.googleapis.com",
+        "secretmanager.googleapis.com",
+        "cloudscheduler.googleapis.com",
+        "pubsub.googleapis.com"
+      ],
+      "service_account": {
+        "name": "helios-automation-sa",
+        "roles": [
+          "roles/aiplatform.user",
+          "roles/storage.admin",
+          "roles/sheets.editor",
+          "roles/drive.file",
+          "roles/secretmanager.secretAccessor",
+          "roles/pubsub.publisher",
+          "roles/pubsub.subscriber"
+        ]
+      }
+    },
+    "compute_resources": {
+      "cloud_run_services": {
+        "ceo_orchestrator": {
+          "cpu": "2",
+          "memory": "4Gi",
+          "min_instances": "1",
+          "max_instances": "10",
+          "timeout": "900s"
+        },
+        "trend_discovery": {
+          "cpu": "4",
+          "memory": "8Gi",
+          "min_instances": "0",
+          "max_instances": "5",
+          "timeout": "300s"
+        },
+        "content_generation": {
+          "cpu": "4",
+          "memory": "8Gi",
+          "min_instances": "0",
+          "max_instances": "8",
+          "timeout": "600s"
+        },
+        "publication_handler": {
+          "cpu": "2",
+          "memory": "4Gi",
+          "min_instances": "0",
+          "max_instances": "3",
+          "timeout": "300s"
+        }
+      },
+      "storage": {
+        "cloud_storage_bucket": "helios-product-assets",
+        "firestore_database": "helios-data",
+        "secret_manager": "API keys and credentials storage"
+      }
+    }
+  },
+  "python_dependencies": {
+    "core_libraries": {
+      "google-cloud-aiplatform": ">=1.38.0",
+      "google-cloud-storage": ">=2.10.0",
+      "google-cloud-firestore": ">=2.13.0",
+      "google-cloud-secret-manager": ">=2.16.0",
+      "google-auth": ">=2.23.0",
+      "google-auth-oauthlib": ">=1.1.0",
+      "google-auth-httplib2": ">=0.1.1"
+    },
+    "google_workspace_apis": {
+      "google-api-python-client": ">=2.100.0",
+      "googleapiclient": ">=2.100.0",
+      "google-api-core": ">=2.11.0"
+    },
+    "mcp_integration": {
+      "mcp": ">=1.0.0",
+      "google-mcp-tools": "latest",
+      "mcp-client": ">=0.5.0"
+    },
+    "ai_ml_libraries": {
+      "vertexai": ">=1.38.0",
+      "google-generativeai": ">=0.3.0",
+      "langchain-google-vertexai": ">=0.1.0"
+    },
+    "web_scraping_apis": {
+      "requests": ">=2.31.0",
+      "aiohttp": ">=3.8.5",
+      "tweepy": ">=4.14.0",
+      "praw": ">=7.7.1",
+      "beautifulsoup4": ">=4.12.2"
+    },
+    "async_processing": {
+      "asyncio": "Built-in Python 3.13.6",
+      "aiofiles": ">=23.2.0",
+      "asyncpg": ">=0.28.0",
+      "celery": ">=5.3.0",
+      "redis": ">=4.6.0"
+    },
+    "data_processing": {
+      "pandas": ">=2.1.0",
+      "numpy": ">=1.25.0",
+      "pillow": ">=10.0.0",
+      "python-dateutil": ">=2.8.2"
+    },
+    "external_apis": {
+      "printify-python": ">=1.0.0",
+      "etsy-python": ">=2.0.0",
+      "fastapi": ">=0.103.0",
+      "uvicorn": ">=0.23.0"
+    }
+  },
+  "project_structure": {
+    "root_directory": "helios_autonomous_store/",
+    "structure": {
+      "src/": {
+        "agents/": {
+          "ceo_orchestrator.py": "Main priority controller agent",
+          "zeitgeist_finder.py": "Trend discovery with Google MCP",
+          "audience_analyst.py": "Audience analysis agent",
+          "product_strategist.py": "Product selection and strategy",
+          "creative_director.py": "Design generation with Vertex AI",
+          "marketing_copywriter.py": "Copy generation agent",
+          "ethical_guardian.py": "Content safety and ethics",
+          "printify_publisher.py": "Publication automation",
+          "performance_analytics.py": "Analytics and optimization"
+        },
+        "services/": {
+          "google_cloud/": {
+            "vertex_ai_client.py": "Gemini AI interface",
+            "storage_client.py": "Cloud Storage operations",
+            "firestore_client.py": "Database operations",
+            "sheets_client.py": "Google Sheets integration",
+            "drive_client.py": "Google Drive operations",
+            "secret_manager.py": "Credentials management"
+          },
+          "mcp_integration/": {
+            "mcp_client.py": "Google MCP client",
+            "social_trends_scanner.py": "Social media trend scanning",
+            "google_trends_client.py": "Google Trends integration",
+            "news_sentiment_analyzer.py": "News analysis"
+          },
+          "external_apis/": {
+            "printify_client.py": "Printify API integration",
+            "etsy_client.py": "Etsy API integration",
+            "image_generation.py": "Vertex AI image generation"
+          }
+        },
+        "models/": {
+          "trend_data.py": "Trend data models",
+          "product_data.py": "Product data models",
+          "audience_data.py": "Audience data models",
+          "analytics_data.py": "Analytics data models"
+        },
+        "utils/": {
+          "config_loader.py": "Configuration management",
+          "error_handler.py": "Error handling and recovery",
+          "performance_monitor.py": "Performance tracking",
+          "batch_processor.py": "Batch processing utilities"
+        }
+      },
+      "deployment/": {
+        "docker/": {
+          "Dockerfile.ceo": "CEO orchestrator container",
+          "Dockerfile.agents": "Agent services container",
+          "docker-compose.yml": "Local development setup"
+        },
+        "cloud_run/": {
+          "ceo-service.yaml": "CEO service deployment",
+          "agent-services.yaml": "Agent services deployment",
+          "cloudbuild.yaml": "CI/CD pipeline"
+        },
+        "terraform/": {
+          "main.tf": "Infrastructure as code",
+          "variables.tf": "Configuration variables",
+          "outputs.tf": "Resource outputs"
+        }
+      },
+      "config/": {
+        "production.yaml": "Production configuration",
+        "development.yaml": "Development configuration",
+        "agent_prompts.yaml": "Agent system prompts"
+      },
+      "tests/": {
+        "unit/": "Unit tests for all components",
+        "integration/": "Integration tests",
+        "e2e/": "End-to-end workflow tests"
+      },
+      "requirements.txt": "Python dependencies",
+      "pyproject.toml": "Project configuration",
+      "main.py": "Application entry point",
+      "README.md": "Setup and deployment guide"
+    }
+  },
+  "google_mcp_integration": {
+    "mcp_server_setup": {
+      "deployment": "Google Cloud Run",
+      "runtime": "Python 3.13.6",
+      "endpoints": {
+        "social_trends": "/mcp/social-trends",
+        "google_trends": "/mcp/google-trends",
+        "news_analysis": "/mcp/news-analysis",
+        "competitor_intel": "/mcp/competitor-intelligence"
+      }
+    },
+    "mcp_tools_configuration": {
+      "google_trends_tool": {
+        "class": "GoogleTrendsTool",
+        "authentication": "Google Cloud Service Account",
+        "capabilities": [
+          "Real-time trend data",
+          "Geographic filtering",
+          "Time-based analysis",
+          "Related queries"
+        ]
+      },
+      "social_media_scanner": {
+        "class": "SocialMediaScanner",
+        "platforms": ["twitter", "reddit", "youtube"],
+        "rate_limiting": "Built-in with exponential backoff",
+        "data_processing": "Real-time sentiment and engagement analysis"
+      },
+      "news_sentiment_analyzer": {
+        "class": "NewsAnalyzer",
+        "sources": ["Google News", "RSS feeds", "News API"],
+        "ai_processing": "Vertex AI for sentiment and relevance"
+      }
+    }
+  },
+  "gemini_ai_configuration": {
+    "vertex_ai_setup": {
+      "project_id": "helios-autonomous-store",
+      "location": "us-central1",
+      "models": {
+        "gemini_pro": {
+          "model_name": "gemini-1.5-pro",
+          "use_cases": ["Complex analysis", "Strategy formulation"],
+          "max_tokens": 8192,
+          "temperature": 0.7
+        },
+        "gemini_flash": {
+          "model_name": "gemini-1.5-flash",
+          "use_cases": ["Rapid processing", "Copy generation"],
+          "max_tokens": 8192,
+          "temperature": 0.8
+        },
+        "gemini_ultra": {
+          "model_name": "gemini-1.0-ultra",
+          "use_cases": ["CEO orchestration", "Critical decisions"],
+          "max_tokens": 32768,
+          "temperature": 0.5
+        }
+      },
+      "image_generation": {
+        "model": "imagen-3",
+        "specifications": {
+          "resolution": "1024x1024",
+          "format": "PNG",
+          "quality": "high",
+          "safety_filtering": "enabled"
+        }
+      }
+    },
+    "prompt_management": {
+      "storage": "Google Cloud Storage",
+      "versioning": "Git-based with Cloud Source Repositories",
+      "a_b_testing": "Cloud Functions for prompt optimization"
+    }
+  },
+  "system_agents": {
+    "ceo_orchestrator": {
+      "file": "src/agents/ceo_orchestrator.py",
+      "class": "HeliosCEOAgent",
+      "model": "gemini-1.0-ultra",
+      "cloud_run_service": "ceo-orchestrator",
+      "responsibilities": [
+        "Priority-based task routing using Pub/Sub",
+        "Quality gate enforcement with Firestore tracking",
+        "Parallel execution coordination via Cloud Tasks",
+        "Performance optimization with Cloud Monitoring",
+        "Error recovery with exponential backoff"
+      ],
+      "integrations": {
+        "pub_sub_topics": [
+          "trend-discovered",
+          "analysis-complete",
+          "content-ready",
+          "publication-success"
+        ],
+        "firestore_collections": [
+          "workflow_states",
+          "quality_gates",
+          "performance_metrics"
+        ]
+      }
+    },
+    "zeitgeist_finder": {
+      "file": "src/agents/zeitgeist_finder.py",
+      "class": "ZeitgeistFinderAgent",
+      "model": "gemini-1.5-pro",
+      "cloud_run_service": "trend-discovery",
+      "mcp_integration": {
+        "client": "Google MCP Client",
+        "tools": [
+          "GoogleTrendsTool",
+          "SocialMediaScanner",
+          "NewsAnalyzer",
+          "CompetitorIntelligence"
+        ]
+      },
+      "data_sources": {
+        "google_trends_api": "Via MCP Google Trends Tool",
+        "social_media": "Via MCP Social Scanner",
+        "news_sources": "Via MCP News Analyzer",
+        "custom_scrapers": "Reddit, Twitter, TikTok APIs"
+      },
+      "psychological_enhancement": {
+        "emotional_driver_analysis": "Gemini-powered emotion classification",
+        "cultural_context_mapping": "Multi-dimensional trend analysis"
+      },
+      "output_storage": {
+        "firestore_collection": "trend_discoveries",
+        "cloud_storage_bucket": "trend-analysis-data"
+      }
+    },
+    "audience_analyst": {
+      "file": "src/agents/audience_analyst.py",
+      "class": "AudienceAnalystAgent",
+      "model": "gemini-1.5-pro",
+      "cloud_run_service": "audience-analysis",
+      "analysis_framework": {
+        "demographic_clustering": "Vertex AI AutoML for segmentation",
+        "psychographic_mapping": "Gemini-powered personality analysis",
+        "behavioral_prediction": "BigQuery ML for pattern recognition"
+      },
+      "data_sources": {
+        "google_analytics": "Via Google Analytics API",
+        "social_demographics": "Via MCP Social Scanner",
+        "market_research": "Via Google Trends and search data"
+      },
+      "rapid_mode": {
+        "trigger_conditions": "trend_urgency >= 8.5",
+        "fallback_data": "Firestore cached personas",
+        "execution_time": "< 30 seconds"
+      }
+    },
+    "product_strategist": {
+      "file": "src/agents/product_strategist.py",
+      "class": "ProductStrategistAgent",
+      "model": "gemini-1.5-pro",
+      "cloud_run_service": "product-strategy",
+      "product_selection": {
+        "printify_catalog_cache": "Firestore with daily refresh",
+        "performance_data": "BigQuery analytics",
+        "profit_optimization": "ML-powered margin prediction"
+      },
+      "psychological_enhancement": {
+        "identity_positioning": "Gemini-powered brand messaging",
+        "collection_strategy": "Sequential product planning",
+        "emotional_hooks": "Sentiment-driven marketing angles"
+      }
+    },
+    "creative_director": {
+      "file": "src/agents/creative_director.py",
+      "class": "CreativeDirectorAgent",
+      "model": "gemini-1.5-flash",
+      "cloud_run_service": "content-generation",
+      "image_generation": {
+        "primary": "Vertex AI Imagen-3",
+        "backup": "Vertex AI Imagen-2",
+        "processing": "Cloud Vision API for quality checks"
+      },
+      "batch_processing": {
+        "concurrent_generations": 5,
+        "queue_management": "Cloud Tasks",
+        "asset_storage": "Cloud Storage with CDN"
+      },
+      "quality_assurance": {
+        "safety_filtering": "Cloud Vision Safe Search",
+        "brand_compliance": "Custom ML model",
+        "resolution_validation": "Automated checks"
+      }
+    },
+    "marketing_copywriter": {
+      "file": "src/agents/marketing_copywriter.py",
+      "class": "MarketingCopywriterAgent",
+      "model": "gemini-1.5-flash",
+      "cloud_run_service": "content-generation",
+      "copy_generation": {
+        "seo_optimization": "Google Search Console integration",
+        "a_b_testing": "Firebase Remote Config",
+        "brand_voice": "Fine-tuned Gemini model"
+      },
+      "psychological_framework": {
+        "emotion_triggers": "Sentiment analysis integration",
+        "social_proof": "Review and testimonial generation",
+        "urgency_creation": "Dynamic scarcity messaging"
+      }
+    },
+    "printify_publisher": {
+      "file": "src/agents/printify_publisher.py",
+      "class": "PrintifyPublisherAgent",
+      "model": "gemini-1.5-flash",
+      "cloud_run_service": "publication-handler",
+      "printify_integration": {
+        "api_client": "Custom Python client with retry logic",
+        "batch_operations": "Concurrent API calls with rate limiting",
+        "error_handling": "Exponential backoff with Pub/Sub dead letter queue"
+      },
+      "etsy_integration": {
+        "method": "Via Printify API connection",
+        "fallback": "Direct Etsy API (when approved)",
+        "monitoring": "Cloud Monitoring for sync status"
+      },
+      "quality_gates": {
+        "image_validation": "Resolution, format, size checks",
+        "pricing_validation": "Margin threshold enforcement",
+        "content_moderation": "Automated safety checks"
+      }
+    }
+  },
+  "google_apps_integration": {
+    "google_sheets": {
+      "client": "Google Sheets API v4",
+      "authentication": "Service Account with domain-wide delegation",
+      "spreadsheets": {
+        "master_tracking": {
+          "id": "environment_variable: GOOGLE_SHEETS_TRACKING_ID",
+          "sheets": [
+            "Product_Launches",
+            "Trend_Analysis", 
+            "Performance_Dashboard",
+            "Financial_Summary"
+          ],
+          "update_frequency": "Real-time via batch updates"
+        }
+      },
+      "automation": {
+        "formulas": "Automated ROI and performance calculations",
+        "charts": "Dynamic visualization with Google Charts API",
+        "alerts": "Google Apps Script triggers for notifications"
+      }
+    },
+    "google_drive": {
+      "client": "Google Drive API v3",
+      "folder_structure": {
+        "root": "Helios Autonomous Store",
+        "subfolders": [
+          "Product Images/{YYYY-MM-DD}",
+          "Generated Designs/{trend_name}",
+          "Marketing Assets/{product_type}",
+          "Analytics Reports/{month}"
+        ]
+      },
+      "sharing": {
+        "public_access": "Anyone with link can view",
+        "cdn_integration": "Google Cloud CDN for fast delivery"
+      }
+    },
+    "gmail_integration": {
+      "client": "Gmail API",
+      "use_cases": [
+        "Performance reports via email",
+        "Error notifications to admin",
+        "Weekly analytics summaries",
+        "Trend alert notifications"
+      ]
+    }
+  },
+  "printify_etsy_workflow": {
+    "printify_api_integration": {
+      "client_implementation": {
+        "file": "src/services/external_apis/printify_client.py",
+        "class": "PrintifyAPIClient",
+        "authentication": "Bearer token from environment",
+        "rate_limiting": "2 seconds between calls",
+        "retry_logic": "Exponential backoff: 2s, 4s, 8s"
+      },
+      "core_operations": {
+        "upload_image": {
+          "endpoint": "POST /v1/uploads/images.json",
+          "input": "Cloud Storage public URL",
+          "output": "Printify image ID"
+        },
+        "create_product": {
+          "endpoint": "POST /v1/shops/{shop_id}/products.json",
+          "payload": "Product data with variants and print areas",
+          "output": "Printify product ID"
+        },
+        "publish_product": {
+          "endpoint": "POST /v1/shops/{shop_id}/products/{product_id}/publish.json",
+          "payload": "Publishing configuration",
+          "output": "Published product details"
+        }
+      },
+      "etsy_sync_via_printify": {
+        "connection_setup": "Printify-Etsy integration in Printify dashboard",
+        "automatic_sync": "Products auto-sync to connected Etsy store",
+        "monitoring": "Track sync status via Printify webhooks",
+        "error_handling": "Retry failed syncs, alert on persistent failures"
+      }
+    },
+    "etsy_direct_integration": {
+      "status": "Backup/Future implementation",
+      "client_implementation": {
+        "file": "src/services/external_apis/etsy_client.py",
+        "class": "EtsyAPIClient",
+        "authentication": "OAuth 2.0 when approved",
+        "use_case": "Direct product management and analytics"
+      }
+    },
+    "publication_workflow": {
+      "steps": [
+        {
+          "step": 1,
+          "action": "Upload generated image to Cloud Storage",
+          "service": "Google Cloud Storage",
+          "output": "Public image URL"
+        },
+        {
+          "step": 2,
+          "action": "Upload image to Printify",
+          "service": "Printify API",
+          "output": "Printify image ID"
+        },
+        {
+          "step": 3,
+          "action": "Create product on Printify",
+          "service": "Printify API",
+          "output": "Printify product ID"
+        },
+        {
+          "step": 4,
+          "action": "Publish product to connected stores",
+          "service": "Printify API",
+          "output": "Etsy listing ID (via sync)"
+        },
+        {
+          "step": 5,
+          "action": "Log publication results",
+          "service": "Google Sheets + Firestore",
+          "output": "Tracking records"
+        }
+      ],
+      "error_handling": {
+        "image_upload_failure": "Retry with different formats/sizes",
+        "product_creation_failure": "Validate data and retry with fallback options",
+        "publishing_failure": "Queue for manual review, alert administrator",
+        "etsy_sync_failure": "Monitor Printify dashboard, retry sync manually"
+      }
+    }
+  },
+  "deployment_configuration": {
+    "local_development": {
+      "setup_command": "python -m pip install -r requirements.txt",
+      "environment": ".env.development",
+      "services": "Docker Compose for local Google Cloud emulators",
+      "testing": "pytest with coverage reporting"
+    },
+    "google_cloud_deployment": {
+      "infrastructure": {
+        "tool": "Terraform",
+        "state_backend": "Google Cloud Storage",
+        "resources": [
+          "Cloud Run services",
+          "Firestore database",
+          "Cloud Storage buckets",
+          "Pub/Sub topics",
+          "Cloud Scheduler jobs",
+          "Secret Manager secrets"
+        ]
+      },
+      "ci_cd_pipeline": {
+        "trigger": "Google Cloud Build",
+        "source": "Cloud Source Repositories",
+        "steps": [
+          "Run unit tests",
+          "Build Docker images",
+          "Deploy to staging",
+          "Run integration tests",
+          "Deploy to production"
+        ]
+      }
+    },
+    "monitoring_observability": {
+      "logging": "Google Cloud Logging",
+      "metrics": "Google Cloud Monitoring",
+      "tracing": "Google Cloud Trace",
+      "alerting": "Google Cloud Alerting with PagerDuty",
+      "dashboards": "Google Cloud Monitoring dashboards"
+    }
+  },
+  "environment_configuration": {
+    "required_environment_variables": {
+      "google_cloud": {
+        "GOOGLE_CLOUD_PROJECT": "helios-autonomous-store",
+        "GOOGLE_APPLICATION_CREDENTIALS": "Service account key file path",
+        "GOOGLE_CLOUD_REGION": "us-central1"
+      },
+      "google_services": {
+        "GOOGLE_SHEETS_TRACKING_ID": "Master tracking spreadsheet ID",
+        "GOOGLE_DRIVE_FOLDER_ID": "Root folder for asset storage"
+      },
+      "mcp_configuration": {
+        "GOOGLE_MCP_SERVER_URL": "MCP server endpoint",
+        "GOOGLE_MCP_AUTH_TOKEN": "MCP authentication token"
+      },
+      "external_apis": {
+        "PRINTIFY_API_TOKEN": "Printify API bearer token",
+        "PRINTIFY_SHOP_ID": "Printify shop identifier",
+        "ETSY_API_KEY": "Etsy API key (when approved)"
+      },
+      "performance_settings": {
+        "MIN_OPPORTUNITY_SCORE": "7.0",
+        "MIN_AUDIENCE_CONFIDENCE": "7.0", 
+        "MIN_PROFIT_MARGIN": "0.35",
+        "MAX_EXECUTION_TIME": "300",
+        "ENABLE_PARALLEL_PROCESSING": "true",
+        "ENABLE_BATCH_CREATION": "true"
+      }
+    },
+    "secrets_management": {
+      "provider": "Google Secret Manager",
+      "secrets": [
+        "printify-api-token",
+        "etsy-api-credentials", 
+        "social-media-api-keys",
+        "news-api-keys"
+      ]
+    }
+  },
+  "performance_optimization": {
+    "caching_strategy": {
+      "trend_data": "Redis on Google Memorystore (1 hour TTL)",
+      "printify_catalog": "Firestore with daily refresh",
+      "generated_content": "Cloud Storage with CDN",
+      "api_responses": "Application-level caching with 5-minute TTL"
+    },
+    "scaling_configuration": {
+      "horizontal_scaling": "Cloud Run auto-scaling based on CPU/memory",
+      "vertical_scaling": "Configurable CPU/memory per service",
+      "cost_optimization": "Scale-to-zero when idle",
+      "performance_monitoring": "Cloud Monitoring with custom metrics"
+    },
+    "batch_processing": {
+      "image_generation": "Concurrent processing with semaphore limits",
+      "api_calls": "Batch requests where supported",
+      "data_processing": "Pandas with Dask for large datasets",
+      "queue_management": "Cloud Tasks for async processing"
+    }
+  },
+  "testing_strategy": {
+    "unit_tests": {
+      "framework": "pytest",
+      "coverage_target": "> 80%",
+      "mocking": "unittest.mock for external APIs",
+      "fixtures": "pytest fixtures for test data"
+    },
+    "integration_tests": {
+      "google_cloud_emulators": "Local testing environment",
+      "api_mocking": "responses library for HTTP mocking",
+      "database_testing": "Firestore emulator"
+    },
+    "end_to_end_tests": {
+      "workflow_testing": "Full trend-to-product pipeline",
+      "performance_testing": "Load testing with locust",
+      "monitoring": "Test results tracked in Cloud Monitoring"
+    }
+  },
+  "security_compliance": {
+    "authentication": {
+      "service_accounts": "Google Cloud IAM with minimal permissions",
+      "api_keys": "Stored in Secret Manager with rotation",
+      "oauth_flows": "Google OAuth 2.0 for user-facing features"
+    },
+    "data_protection": {
+      "encryption": "Google Cloud default encryption at rest and in transit",
+      "pii_handling": "Minimal PII collection with automatic purging",
+      "audit_logging": "Cloud Audit Logs for all API access"
+    },
+    "compliance": {
+      "gdpr_compliance": "Data minimization and right to deletion",
+      "api_security": "Rate limiting and request validation",
+      "content_safety": "Automated content moderation"
+    }
+  }
+}

@@ -1,0 +1,54 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "helios-ai-agents"
+version = "1.0.0"
+description = "Helios AI Agents Service - Dedicated service for AI agent operations"
+readme = "README.md"
+requires-python = ">=3.13"
+license = {text = "MIT"}
+authors = [
+    {name = "Helios Team", email = "team@helios.ai"}
+]
+keywords = ["ai", "agents", "trends", "automation", "ecommerce"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+]
+dependencies = [
+    "fastapi>=0.104.1",
+    "uvicorn[standard]>=0.24.0",
+    "gunicorn>=21.2.0",
+    "google-cloud-aiplatform>=1.38.1",
+    "google-cloud-secret-manager>=2.16.3",
+    "requests>=2.31.0",
+    "aiohttp>=3.9.1",
+    "python-dotenv>=1.0.0",
+    "pytrends>=4.9.2",
+    "praw>=7.7.1",
+    "tweepy>=4.14.0",
+    "beautifulsoup4>=4.12.2",
+    "lxml>=4.9.3",
+    "pandas>=2.1.3",
+    "numpy>=1.26.2",
+    "pydantic>=2.0.0",
+    "anyio>=3.7.1"
+]
+
+[project.optional-dependencies]
+dev = ["pytest", "black", "flake8", "mypy"]
+
+[project.scripts]
+helios-ai-agents = "helios_agents.main:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+helios_agents = ["*.py", "**/*.py"]
