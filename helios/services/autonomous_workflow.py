@@ -7,9 +7,12 @@ End-to-end autonomous trend-to-product pipeline
 import asyncio
 import json
 import time
+import logging
 from typing import Dict, List, Optional, Any
 from dataclasses import dataclass
-from loguru import logger
+
+# Use standard logging instead of loguru
+logger = logging.getLogger(__name__)
 
 from ..config import HeliosConfig
 from ..services.zeitgeist_finder import ZeitgeistFinder, TrendAnalysis

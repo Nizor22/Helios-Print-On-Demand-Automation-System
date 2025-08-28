@@ -1,0 +1,239 @@
+# Google Cloud Monitoring Dashboard Configuration for Helios System
+# Proactive monitoring and visualization of system health
+
+# Main System Overview Dashboard
+- displayName: "Helios System Overview"
+  description: "Comprehensive view of Helios system health, performance, and AI agent status"
+  
+  # System Health Section
+  - title: "System Health Overview"
+    widgets:
+      - title: "Service Health Status"
+        xyChart:
+          dataSets:
+            - timeSeriesQuery:
+                timeSeriesFilter:
+                  filter: 'metric.type="run.googleapis.com/request_count"'
+                  filter: 'resource.labels.service_name="helios-orchestrator" OR resource.labels.service_name="helios-ai-agents"'
+                unitOverride: "1"
+                crossSeriesReducer: REDUCE_SUM
+                perSeriesAligner: ALIGN_RATE
+          thresholds:
+            - value: 0
+              color: "RED"
+              label: "Unhealthy"
+            - value: 1
+              color: "GREEN"
+              label: "Healthy"
+      
+      - title: "Response Time Trends"
+        xyChart:
+          dataSets:
+            - timeSeriesQuery:
+                timeSeriesFilter:
+                  filter: 'metric.type="run.googleapis.com/request_latencies"'
+                  filter: 'resource.labels.service_name="helios-orchestrator" OR resource.labels.service_name="helios-ai-agents"'
+                unitOverride: "ms"
+                crossSeriesReducer: REDUCE_MEAN
+                perSeriesAligner: ALIGN_MEAN
+          thresholds:
+            - value: 2000
+              color: "YELLOW"
+              label: "Warning"
+            - value: 5000
+              color: "RED"
+              label: "Critical"
+
+  # AI Agent Performance Section
+  - title: "AI Agent Performance"
+    widgets:
+      - title: "Agent Usage by Type"
+        pieChart:
+          dataSets:
+            - timeSeriesQuery:
+                timeSeriesFilter:
+                  filter: 'metric.type="custom.googleapis.com/helios_ai_agent_usage"'
+                  filter: 'resource.labels.service_name="helios-ai-agents"'
+                unitOverride: "requests"
+                crossSeriesReducer: REDUCE_SUM
+                perSeriesAligner: ALIGN_RATE
+      
+      - title: "Agent Response Times"
+        xyChart:
+          dataSets:
+            - timeSeriesQuery:
+                timeSeriesFilter:
+                  filter: 'metric.type="run.googleapis.com/request_latencies"'
+                  filter: 'resource.labels.service_name="helios-ai-agents"'
+                unitOverride: "ms"
+                crossSeriesReducer: REDUCE_MEAN
+                perSeriesAligner: ALIGN_MEAN
+
+  # Error Analysis Section
+  - title: "Error Analysis & Alerting"
+    widgets:
+      - title: "Error Rate Trends"
+        xyChart:
+          dataSets:
+            - timeSeriesQuery:
+                timeSeriesFilter:
+                  filter: 'resource.type="cloud_run_revision" AND severity="ERROR"'
+                  filter: 'resource.labels.service_name="helios-orchestrator" OR resource.labels.service_name="helios-ai-agents"'
+                unitOverride: "errors/min"
+                crossSeriesReducer: REDUCE_COUNT
+                perSeriesAligner: ALIGN_RATE
+          thresholds:
+            - value: 5
+              color: "YELLOW"
+              label: "Warning Threshold"
+            - value: 10
+              color: "RED"
+              label: "Critical Threshold"
+      
+      - title: "Warning Rate Trends"
+        xyChart:
+          dataSets:
+            - timeSeriesQuery:
+                timeSeriesFilter:
+                  filter: 'resource.type="cloud_run_revision" AND severity="WARNING"'
+                  filter: 'resource.labels.service_name="helios-orchestrator" OR resource.labels.service_name="helios-ai-agents"'
+                unitOverride: "warnings/min"
+                crossSeriesReducer: REDUCE_COUNT
+                perSeriesAligner: ALIGN_RATE
+
+  # Resource Utilization Section
+  - title: "Resource Utilization"
+    widgets:
+      - title: "CPU Usage"
+        xyChart:
+          dataSets:
+            - timeSeriesQuery:
+                timeSeriesFilter:
+                  filter: 'metric.type="run.googleapis.com/container/cpu/utilizations"'
+                  filter: 'resource.labels.service_name="helios-orchestrator" OR resource.labels.service_name="helios-ai-agents"'
+                unitOverride: "10^2.%"
+                crossSeriesReducer: REDUCE_MEAN
+                perSeriesAligner: ALIGN_MEAN
+          thresholds:
+            - value: 70
+              color: "YELLOW"
+              label: "High Usage"
+            - value: 90
+              color: "RED"
+              label: "Critical Usage"
+      
+      - title: "Memory Usage"
+        xyChart:
+          dataSets:
+            - timeSeriesQuery:
+                timeSeriesFilter:
+                  filter: 'metric.type="run.googleapis.com/container/memory/utilizations"'
+                  filter: 'resource.labels.service_name="helios-orchestrator" OR resource.labels.service_name="helios-ai-agents"'
+                unitOverride: "10^2.%"
+                crossSeriesReducer: REDUCE_MEAN
+                perSeriesAligner: ALIGN_MEAN
+
+# AI Agent Performance Dashboard
+- displayName: "Helios AI Agent Performance"
+  description: "Detailed performance metrics for individual AI agents and their operations"
+  
+  # Agent-Specific Metrics
+  - title: "Individual Agent Performance"
+    widgets:
+      - title: "Zeitgeist Finder Performance"
+        xyChart:
+          dataSets:
+            - timeSeriesQuery:
+                timeSeriesFilter:
+                  filter: 'metric.type="custom.googleapis.com/helios_ai_agent_usage"'
+                  filter: 'resource.labels.agent_type="zeitgeist_finder"'
+                unitOverride: "requests"
+                crossSeriesReducer: REDUCE_SUM
+                perSeriesAligner: ALIGN_RATE
+      
+      - title: "Creative Director Performance"
+        xyChart:
+          dataSets:
+            - timeSeriesQuery:
+                timeSeriesFilter:
+                  filter: 'metric.type="custom.googleapis.com/helios_ai_agent_usage"'
+                  filter: 'resource.labels.agent_type="creative_director"'
+                unitOverride: "requests"
+                crossSeriesReducer: REDUCE_SUM
+                perSeriesAligner: ALIGN_RATE
+      
+      - title: "Product Strategist Performance"
+        xyChart:
+          dataSets:
+            - timeSeriesQuery:
+                timeSeriesFilter:
+                  filter: 'metric.type="custom.googleapis.com/helios_ai_agent_usage"'
+                  filter: 'resource.labels.agent_type="product_strategist"'
+                unitOverride: "requests"
+                crossSeriesReducer: REDUCE_SUM
+                perSeriesAligner: ALIGN_RATE
+
+# Error Analysis Dashboard
+- displayName: "Helios Error Analysis"
+  description: "Comprehensive error analysis, trending, and root cause investigation"
+  
+  # Error Trends
+  - title: "Error Pattern Analysis"
+    widgets:
+      - title: "Error Rate by Service"
+        xyChart:
+          dataSets:
+            - timeSeriesQuery:
+                timeSeriesFilter:
+                  filter: 'resource.type="cloud_run_revision" AND severity="ERROR"'
+                  filter: 'resource.labels.service_name="helios-orchestrator"'
+                unitOverride: "errors/min"
+                crossSeriesReducer: REDUCE_COUNT
+                perSeriesAligner: ALIGN_RATE
+            - timeSeriesQuery:
+                timeSeriesFilter:
+                  filter: 'resource.type="cloud_run_revision" AND severity="ERROR"'
+                  filter: 'resource.labels.service_name="helios-ai-agents"'
+                unitOverride: "errors/min"
+                crossSeriesReducer: REDUCE_COUNT
+                perSeriesAligner: ALIGN_RATE
+      
+      - title: "Error Distribution by Type"
+        pieChart:
+          dataSets:
+            - timeSeriesQuery:
+                timeSeriesFilter:
+                  filter: 'resource.type="cloud_run_revision" AND severity="ERROR"'
+                  filter: 'resource.labels.service_name="helios-orchestrator" OR resource.labels.service_name="helios-ai-agents"'
+                unitOverride: "errors"
+                crossSeriesReducer: REDUCE_COUNT
+                perSeriesAligner: ALIGN_RATE
+
+# Resource Utilization Dashboard
+- displayName: "Helios Resource Utilization"
+  description: "Detailed resource monitoring and scaling metrics"
+  
+  # Scaling Metrics
+  - title: "Auto-scaling Performance"
+    widgets:
+      - title: "Instance Count Trends"
+        xyChart:
+          dataSets:
+            - timeSeriesQuery:
+                timeSeriesFilter:
+                  filter: 'metric.type="run.googleapis.com/container/instance_count"'
+                  filter: 'resource.labels.service_name="helios-orchestrator" OR resource.labels.service_name="helios-ai-agents"'
+                unitOverride: "1"
+                crossSeriesReducer: REDUCE_MEAN
+                perSeriesAligner: ALIGN_MEAN
+      
+      - title: "Request Queue Depth"
+        xyChart:
+          dataSets:
+            - timeSeriesQuery:
+                timeSeriesFilter:
+                  filter: 'metric.type="run.googleapis.com/request_count"'
+                  filter: 'resource.labels.service_name="helios-orchestrator" OR resource.labels.service_name="helios-ai-agents"'
+                unitOverride: "requests"
+                crossSeriesReducer: REDUCE_SUM
+                perSeriesAligner: ALIGN_RATE

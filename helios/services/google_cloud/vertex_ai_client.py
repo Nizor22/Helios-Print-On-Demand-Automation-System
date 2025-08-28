@@ -17,7 +17,8 @@ from google.cloud import aiplatform
 from google.auth import default
 from google.auth.exceptions import DefaultCredentialsError
 
-from loguru import logger
+import logging
+logger = logging.getLogger(__name__)
 try:
     import google.generativeai as genai
 except Exception:

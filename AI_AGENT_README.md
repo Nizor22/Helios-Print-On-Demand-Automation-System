@@ -93,24 +93,22 @@ cd deployment
 
 ### Manual Deployment Steps
 
-1. **Build the AI-enhanced image:**
+1. **Deploy using Cloud Build (Recommended):**
    ```bash
-   docker build -f deployment/docker/Dockerfile.ai -t helios-ai-agent .
+   gcloud builds submit --config deployment/cloud_run/cloudbuild.yaml
    ```
 
-2. **Push to Container Registry:**
+2. **Deploy individual services:**
    ```bash
-   docker tag helios-ai-agent gcr.io/YOUR_PROJECT/helios-ai-agent
-   docker push gcr.io/YOUR_PROJECT/helios-ai-agent
+   gcloud run deploy helios-ai-agents --source . --region us-central1
+   gcloud run deploy helios-orchestrator --source . --region us-central1
    ```
 
-3. **Deploy to Cloud Run:**
+3. **Set environment variables:**
    ```bash
-   gcloud run deploy helios-ai-agent \
-     --image gcr.io/YOUR_PROJECT/helios-ai-agent \
-     --platform managed \
-     --region us-central1 \
-     --set-env-vars="USE_AI_AGENT=true"
+   gcloud run services update helios-ai-agents \
+     --set-env-vars="USE_AI_AGENT=true" \
+     --region us-central1
    ```
 
 ## 🔧 Usage

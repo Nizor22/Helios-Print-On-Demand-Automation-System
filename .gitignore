@@ -188,7 +188,7 @@ $RECYCLE.BIN/
 *~
 
 # Project specific
-*.log
+# *.log  # COMMENTED OUT - This was blocking Cloud Run logging
 .env.local
 .env.development.local
 .env.test.local
@@ -205,4 +205,4 @@ output/*.jpeg
 *.generated.png
 *.generated.jpg
 *.generated.jpeg
-.env
+# .env  # COMMENTED OUT - This was excluding environment configuration

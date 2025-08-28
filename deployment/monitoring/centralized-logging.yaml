@@ -1,0 +1,135 @@
+# Centralized Logging Configuration for Helios System
+# Integration with Google Cloud Operations Suite (formerly Stackdriver)
+
+# Log Sink Configuration
+sinks:
+  - name: "helios-centralized-logs"
+    destination: "bigquery.googleapis.com/projects/helios-ai-automation/datasets/helios_logs"
+    filter: 'resource.type="cloud_run_revision" AND (resource.labels.service_name="helios-orchestrator" OR resource.labels.service_name="helios-ai-agents")'
+    includeChildren: true
+    uniqueWriterIdentity: true
+
+# Log Router Configuration
+routers:
+  - name: "helios-log-router"
+    description: "Routes Helios logs to appropriate destinations based on severity and service"
+    
+    # Route critical errors to immediate alerting
+    - name: "critical-errors-route"
+      filter: 'severity="ERROR" OR severity="CRITICAL"'
+      destination: "projects/helios-ai-automation/logs/helios-critical-errors"
+      priority: "high"
+    
+    # Route warnings to monitoring dashboard
+    - name: "warnings-route"
+      filter: 'severity="WARNING"'
+      destination: "projects/helios-ai-automation/logs/helios-warnings"
+      priority: "medium"
+    
+    # Route info logs to analytics
+    - name: "info-logs-route"
+      filter: 'severity="INFO"'
+      destination: "projects/helios-ai-automation/logs/helios-info"
+      priority: "low"
+    
+    # Route debug logs to development storage
+    - name: "debug-logs-route"
+      filter: 'severity="DEBUG"'
+      destination: "projects/helios-ai-automation/logs/helios-debug"
+      priority: "low"
+
+# Log Retention Policies
+retention:
+  # Critical errors - retain for 1 year
+  critical_errors:
+    retention_days: 365
+    archive_after_days: 30
+    
+  # Warnings - retain for 6 months
+  warnings:
+    retention_days: 180
+    archive_after_days: 30
+    
+  # Info logs - retain for 3 months
+  info_logs:
+    retention_days: 90
+    archive_after_days: 30
+    
+  # Debug logs - retain for 1 month
+  debug_logs:
+    retention_days: 30
+    archive_after_days: 7
+
+# Log Export Configuration
+exports:
+  # Export to BigQuery for analytics
+  bigquery:
+    dataset: "helios_logs"
+    table_prefix: "helios_"
+    write_disposition: "WRITE_APPEND"
+    
+  # Export to Cloud Storage for long-term archival
+  cloud_storage:
+    bucket: "helios-logs-archive"
+    path_prefix: "logs/"
+    retention_days: 1095  # 3 years
+    
+  # Export to Pub/Sub for real-time processing
+  pubsub:
+    topic: "helios-logs-stream"
+    subscription: "helios-logs-subscription"
+
+# Monitoring Integration
+monitoring:
+  # Create custom metrics from log data
+  custom_metrics:
+    - name: "helios_error_rate"
+      description: "Rate of errors per minute"
+      type: "GAUGE"
+      unit: "errors/min"
+      
+    - name: "helios_warning_rate"
+      description: "Rate of warnings per minute"
+      type: "GAUGE"
+      unit: "warnings/min"
+      
+    - name: "helios_request_latency"
+      description: "Request latency in milliseconds"
+      type: "GAUGE"
+      unit: "ms"
+      
+    - name: "helios_ai_agent_usage"
+      description: "Usage of different AI agents"
+      type: "CUMULATIVE"
+      unit: "requests"
+
+# Alerting Configuration
+alerting:
+  # Error rate thresholds
+  error_rate:
+    critical: 10  # errors per minute
+    warning: 5    # errors per minute
+    
+  # Warning rate thresholds
+  warning_rate:
+    critical: 20  # warnings per minute
+    warning: 10   # warnings per minute
+    
+  # Latency thresholds
+  latency:
+    critical: 5000  # 5 seconds
+    warning: 2000   # 2 seconds
+
+# Dashboard Configuration
+dashboards:
+  - name: "Helios System Overview"
+    description: "Comprehensive view of Helios system health and performance"
+    
+  - name: "Helios Error Analysis"
+    description: "Detailed error analysis and trending"
+    
+  - name: "Helios AI Agent Performance"
+    description: "Performance metrics for individual AI agents"
+    
+  - name: "Helios Resource Utilization"
+    description: "CPU, memory, and scaling metrics"

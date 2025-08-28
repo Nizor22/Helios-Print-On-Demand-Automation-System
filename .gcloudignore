@@ -1,0 +1,101 @@
+# .gcloudignore - Excludes files from Cloud Build source deployment
+# This ensures only production-necessary files are deployed
+
+# Development and testing files
+tests/
+test_*.py
+*_test.py
+demo_*.py
+troubleshoot_*.py
+simple_diagnostics.py
+
+# Documentation files
+*.md
+*.txt
+*.rst
+docs/
+documentation/
+
+# Development configuration
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Git and version control
+.git/
+.gitignore
+.gitattributes
+
+# Local development
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+local_settings.py
+
+# Build artifacts
+build/
+dist/
+*.egg-info/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Temporary files
+*.tmp
+*.temp
+*.log
+*.pid
+*.lock
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Test coverage
+.coverage
+htmlcov/
+.tox/
+.nox/
+.pytest_cache/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Backup files
+*.bak
+*.backup
+*.old
+
+# Cloud Build specific
+cloudbuild.yaml.backup
+staging-trigger.yaml
+production-trigger.yaml
+test_build.yaml
+
+# Monitoring and deployment configs (keep these)
+!deployment/
+!monitoring/
+!cloud_run/
+
+# Keep essential runtime files
+!requirements.txt
+!runtime.txt
+!Procfile
+!main.py
+!helios/
+!pyproject.toml

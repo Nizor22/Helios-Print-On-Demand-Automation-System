@@ -8,7 +8,8 @@ import asyncio
 import json
 from typing import Dict, List, Optional, Tuple
 from dataclasses import dataclass
-from loguru import logger
+import logging
+logger = logging.getLogger(__name__)
 
 from ..config import HeliosConfig
 from ..services.google_cloud.vertex_ai_client import VertexAIClient

@@ -10,7 +10,8 @@ from typing import Dict, List, Optional, Any, Union
 from dataclasses import dataclass
 from pathlib import Path
 import httpx
-from loguru import logger
+import logging
+logger = logging.getLogger(__name__)
 
 from ..google_cloud.storage_client import CloudStorageClient
 

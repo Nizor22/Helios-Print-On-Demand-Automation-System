@@ -14,8 +14,8 @@ import time
 
 # Import and configure centralized logging
 try:
-    from helios_agents.logging_config import get_logger
-    logger = get_logger("helios-ai-agents")
+    from helios.logging_config import get_logger
+    logger = get_logger("helios-ai-agents", service_type="ai_agents")
 except ImportError:
     # Fallback logging if config not available
     logging.basicConfig(level=logging.INFO)
@@ -140,15 +140,20 @@ async def execute_agent_task(request: AgentRequest):
     try:
         start_time = time.time()
         
-        # Log the request
-        logger.info(f"Executing {request.agent_type} agent task")
+        # Log the request with structured context
+        logger.info("Starting agent task execution", 
+                   extra={
+                       "operation": "agent_execution",
+                       "agent_type": request.agent_type,
+                       "task_data_keys": list(request.task_data.keys()) if request.task_data else []
+                   })
         
         # TODO: Implement actual AI agent integration
         # This will use your AI models to execute tasks
         
         execution_time = int((time.time() - start_time) * 1000)
         
-        return AgentResponse(
+        result = AgentResponse(
             agent_type=request.agent_type,
             status="success",
             results={
@@ -160,8 +165,28 @@ async def execute_agent_task(request: AgentRequest):
             execution_time_ms=execution_time
         )
         
+        # Log successful completion with metrics
+        logger.info("Agent task executed successfully",
+                   extra={
+                       "operation": "agent_execution",
+                       "agent_type": request.agent_type,
+                       "status": result.status,
+                       "confidence_score": result.confidence_score,
+                       "execution_time_ms": result.execution_time_ms
+                   })
+        
+        return result
+        
     except Exception as e:
-        logger.error(f"Error executing agent task: {e}")
+        # Log error with structured context
+        logger.error("Error executing agent task", 
+                   extra={
+                       "operation": "agent_execution",
+                       "agent_type": request.agent_type,
+                       "error_code": "AGENT_EXECUTION_FAILED",
+                       "error_details": str(e),
+                       "task_data_keys": list(request.task_data.keys()) if request.task_data else []
+                   })
         raise HTTPException(status_code=500, detail=f"Agent execution failed: {str(e)}")
 
 def main():

@@ -1,0 +1,90 @@
+# Google Cloud Monitoring Log-based Alerts for Helios System
+# This configuration sets up proactive monitoring and alerting for critical log events
+
+# Alert Policy for Critical Errors
+- displayName: "Helios Critical Errors Alert"
+  description: "Alert when critical errors occur in Helios services"
+  conditions:
+    - displayName: "Critical Error Logs"
+      conditionThreshold:
+        filter: 'resource.type="cloud_run_revision" AND severity="ERROR" AND (resource.labels.service_name="helios-orchestrator" OR resource.labels.service_name="helios-ai-agents")'
+        comparison: COMPARISON_GREATER_THAN
+        thresholdValue: 0
+        duration: 60s
+        trigger:
+          count: 1
+  alertStrategy:
+    autoClose: 300s
+  notificationChannels:
+    - type: "email"
+      displayName: "Helios DevOps Team"
+  documentation:
+    content: "Critical errors detected in Helios services. Check Cloud Logging for details."
+    mimeType: "text/markdown"
+
+# Alert Policy for Warning Logs
+- displayName: "Helios Warning Logs Alert"
+  description: "Alert when multiple warnings occur in Helios services"
+  conditions:
+    - displayName: "Warning Logs Threshold"
+      conditionThreshold:
+        filter: 'resource.type="cloud_run_revision" AND severity="WARNING" AND (resource.labels.service_name="helios-orchestrator" OR resource.labels.service_name="helios-ai-agents")'
+        comparison: COMPARISON_GREATER_THAN
+        thresholdValue: 5
+        duration: 300s
+        trigger:
+          count: 1
+  alertStrategy:
+    autoClose: 600s
+  notificationChannels:
+    - type: "email"
+      displayName: "Helios DevOps Team"
+  documentation:
+    content: "Multiple warnings detected in Helios services. Investigate potential issues."
+    mimeType: "text/markdown"
+
+# Alert Policy for Service Health
+- displayName: "Helios Service Health Alert"
+  description: "Alert when services become unhealthy or fail health checks"
+  conditions:
+    - displayName: "Service Health Check Failures"
+      conditionThreshold:
+        filter: 'resource.type="cloud_run_revision" AND (resource.labels.service_name="helios-orchestrator" OR resource.labels.service_name="helios-ai-agents") AND textPayload:"health check failed"'
+        comparison: COMPARISON_GREATER_THAN
+        thresholdValue: 0
+        duration: 120s
+        trigger:
+          count: 1
+  alertStrategy:
+    autoClose: 300s
+  notificationChannels:
+    - type: "email"
+      displayName: "Helios DevOps Team"
+  documentation:
+    content: "Service health check failures detected. Investigate service status."
+    mimeType: "text/markdown"
+
+# Alert Policy for High Error Rates
+- displayName: "Helios High Error Rate Alert"
+  description: "Alert when error rate exceeds threshold in a time window"
+  conditions:
+    - displayName: "Error Rate Threshold"
+      conditionThreshold:
+        filter: 'resource.type="cloud_run_revision" AND severity="ERROR" AND (resource.labels.service_name="helios-orchestrator" OR resource.labels.service_name="helios-ai-agents")'
+        comparison: COMPARISON_GREATER_THAN
+        thresholdValue: 10
+        duration: 600s
+        trigger:
+          count: 1
+        aggregations:
+          - alignmentPeriod: 60s
+            perSeriesAligner: ALIGN_RATE
+            crossSeriesReducer: REDUCE_SUM
+  alertStrategy:
+    autoClose: 900s
+  notificationChannels:
+    - type: "email"
+      displayName: "Helios DevOps Team"
+  documentation:
+    content: "High error rate detected in Helios services. Immediate attention required."
+    mimeType: "text/markdown"

@@ -10,7 +10,8 @@ from typing import Dict, List, Optional, Any, Union, Tuple
 from dataclasses import dataclass
 from pathlib import Path
 import base64
-from loguru import logger
+import logging
+logger = logging.getLogger(__name__)
 
 from ..google_cloud.vertex_ai_client import VertexAIClient
 from ..google_cloud.storage_client import CloudStorageClient

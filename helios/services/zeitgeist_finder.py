@@ -9,7 +9,8 @@ import json
 import time
 from typing import Dict, List, Optional, Any
 from dataclasses import dataclass
-from loguru import logger
+import logging
+logger = logging.getLogger(__name__)
 import httpx
 
 from ..config import HeliosConfig

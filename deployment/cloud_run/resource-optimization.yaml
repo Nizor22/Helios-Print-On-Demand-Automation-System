@@ -1,0 +1,65 @@
+# Resource Optimization Configuration for Helios Cloud Run Services
+# Optimized for AI workloads and concurrent processing
+
+# Helios Orchestrator Service - Resource Configuration
+helios-orchestrator:
+  resources:
+    limits:
+      cpu: "2"        # Increased from 1 to 2 for AI orchestration workloads
+      memory: "2Gi"   # Increased from 1Gi to 2Gi for model coordination
+    requests:
+      cpu: "1"        # Minimum CPU request
+      memory: "1Gi"   # Minimum memory request
+  
+  scaling:
+    min_instances: 1      # Keep at least 1 instance warm
+    max_instances: 10     # Scale up to 10 instances for high load
+    concurrency: 80       # Handle 80 concurrent requests per instance
+  
+  timeout: 300s           # 5 minute timeout for long-running AI operations
+  cpu_throttling: false   # Disable CPU throttling for consistent performance
+
+# Helios AI Agents Service - Resource Configuration  
+helios-ai-agents:
+  resources:
+    limits:
+      cpu: "2"        # Increased from 1 to 2 for AI model inference
+      memory: "4Gi"   # Increased from 1Gi to 4Gi for large AI models
+    requests:
+      cpu: "1"        # Minimum CPU request
+      memory: "2Gi"   # Minimum memory request
+  
+  scaling:
+    min_instances: 1      # Keep at least 1 instance warm
+    max_instances: 15     # Scale up to 15 instances for AI workloads
+    concurrency: 50       # Handle 50 concurrent requests per instance (AI models are resource-intensive)
+  
+  timeout: 600s           # 10 minute timeout for AI model operations
+  cpu_throttling: false   # Disable CPU throttling for consistent AI performance
+
+# Resource Allocation Rationale:
+# 
+# CPU Allocation:
+# - Orchestrator: 2 CPU cores for coordinating multiple AI agents
+# - AI Agents: 2 CPU cores for AI model inference and processing
+#
+# Memory Allocation:
+# - Orchestrator: 2Gi for agent coordination and workflow management
+# - AI Agents: 4Gi for AI models, embeddings, and processing buffers
+#
+# Scaling Strategy:
+# - Orchestrator: Conservative scaling (1-10 instances) for workflow coordination
+# - AI Agents: Aggressive scaling (1-15 instances) for AI workload demands
+#
+# Concurrency:
+# - Orchestrator: Higher concurrency (80) for lightweight coordination tasks
+# - AI Agents: Lower concurrency (50) for resource-intensive AI operations
+#
+# Timeouts:
+# - Orchestrator: 5 minutes for workflow coordination
+# - AI Agents: 10 minutes for AI model operations
+#
+# Performance Optimizations:
+# - CPU throttling disabled for consistent AI performance
+# - Minimum instances to reduce cold start latency
+# - Balanced resource allocation for cost optimization
